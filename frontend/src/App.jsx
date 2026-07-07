@@ -9,6 +9,9 @@ import LoginPage from './pages/auth/LoginPage';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
+import StudentsManagement from './pages/admin/user management/StudentsManagement';
+import ProfessorsManagement from './pages/admin/user management/ProfessorsManagement';
+import AdminsManagement from './pages/admin/user management/AdminsManagement (2)';
 
 // Student Pages
 import StudentDashboard from './pages/student/Dashboard';
@@ -42,6 +45,17 @@ function PageAdapter({ component: Component, role, pageName }) {
   return <Component currentPage={pageName} setPage={setPage} onNavigate={setPage} />;
 }
 
+function AdminPlaceholderPage({ title, description }) {
+  return (
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: 32, fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', background: '#fff', borderRadius: 16, padding: 32, boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}>
+        <h1 style={{ margin: '0 0 8px', fontSize: 28, color: '#111827' }}>{title}</h1>
+        <p style={{ margin: 0, color: '#6b7280', fontSize: 15 }}>{description}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Router>
@@ -69,6 +83,16 @@ export default function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<PageAdapter component={AdminDashboard} role="admin" pageName="dashboard" />} />
+        <Route path="/admin/students" element={<StudentsManagement />} />
+        <Route path="/admin/professors" element={<ProfessorsManagement />} />
+        <Route path="/admin/admins" element={<AdminsManagement />} />
+        <Route path="/admin/student-master" element={<AdminPlaceholderPage title="Student Master" description="This section will show the student master management tools." />} />
+        <Route path="/admin/batches" element={<AdminPlaceholderPage title="Batches" description="This section will show batch management tools." />} />
+        <Route path="/admin/subjects" element={<AdminPlaceholderPage title="Subjects" description="This section will show subject management tools." />} />
+        <Route path="/admin/courses" element={<AdminPlaceholderPage title="Courses" description="This section will show the course management tools." />} />
+        <Route path="/admin/learning-paths" element={<AdminPlaceholderPage title="Learning Paths" description="This section will show learning path management tools." />} />
+        <Route path="/admin/analytics" element={<AdminPlaceholderPage title="Analytics" description="This section will show platform analytics reports." />} />
+        <Route path="/admin/profile" element={<AdminPlaceholderPage title="Profile" description="This section will show the admin profile and account settings." />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

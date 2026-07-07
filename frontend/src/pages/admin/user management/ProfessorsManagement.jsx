@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AdminLayout from "../AdminLayout";
 
 const departments = [
   "Computer Science",
@@ -172,9 +173,16 @@ export default function ProfessorsManagement() {
   const getVal = (prof, field) => editedRows[prof.id]?.[field] ?? prof[field];
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#f8f9fb", color: "#1a202c" }}>
+    <AdminLayout
+      title="Professors Management"
+      subtitle="Manage professor records, departments, and teaching assignments."
+      breadcrumbs={[{ label: 'Dashboard' }, { label: 'User Management' }, { label: 'Professors' }]}
+      activePath="/admin/professors"
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#f8f9fb", color: "#1a202c" }}>
       {/* Sidebar */}
-      <aside style={{ width: 220, background: "#fff", borderRight: "1px solid #e5e7eb", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+      <aside style={{ width: 220, background: "#fff", borderRight: "1px solid #e5e7eb", display: "none", flexDirection: "column", flexShrink: 0 }}>
         <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #f0f0f0" }}>
           <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.5px", color: "#1e3a5f" }}>NAME</span>
         </div>
@@ -204,7 +212,7 @@ export default function ProfessorsManagement() {
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Topbar */}
-        <header style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 28px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+        <header style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 28px", height: 60, display: "none", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#1e3a5f" }}>Professors Management</h1>
             <p style={{ margin: 0, fontSize: 12, color: "#9ca3af", marginTop: 1 }}>
@@ -349,7 +357,9 @@ export default function ProfessorsManagement() {
       {showAddModal && <AddProfessorModal onClose={() => setShowAddModal(false)} onAdd={addProfessor} nextId={nextId} />}
 
       {showDropdown && <div onClick={() => setShowDropdown(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />}
-    </div>
+      </div>
+      </div>
+    </AdminLayout>
   );
 }
 

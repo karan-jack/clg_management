@@ -39,10 +39,10 @@ const STATS = [
 ];
 
 const QUICK = [
-  { label:"Manage Students",       desc:"View, add and manage student records",   Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5" },
-  { label:"Manage Professors",     desc:"View, add and manage professor records", Icon:GraduationCap, iconBg:"#F3E8FF", iconColor:"#7C3AED" },
-  { label:"Manage Courses",        desc:"Create and manage platform courses",     Icon:BookOpen,      iconBg:"#D1FAE5", iconColor:"#059669" },
-  { label:"Manage Learning Paths", desc:"Create and organize learning paths",     Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C" },
+  { label:"Manage Students",       desc:"View, add and manage student records",   Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5", path:"/admin/students" },
+  { label:"Manage Professors",     desc:"View, add and manage professor records", Icon:GraduationCap, iconBg:"#F3E8FF", iconColor:"#7C3AED", path:"/admin/professors" },
+  { label:"Manage Courses",        desc:"Create and manage platform courses",     Icon:BookOpen,      iconBg:"#D1FAE5", iconColor:"#059669", path:"/admin/courses" },
+  { label:"Manage Learning Paths", desc:"Create and organize learning paths",     Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C", path:"/admin/learning-paths" },
 ];
 
 const ACTIVITY = [
@@ -61,11 +61,11 @@ const OVERVIEW = [
 ];
 
 const NAV = [
-  { label:"User Management",     Icon:User,         children:["Students","Professors","Admins"] },
-  { label:"Academic Management", Icon:BookOpen,      children:["Student Master","Batches","Subjects"] },
-  { label:"Learning Management", Icon:GraduationCap, children:["Courses","Learning Paths"] },
-  { label:"Analytics",           Icon:BarChart2,     children:["Platform Analytics"] },
-  { label:"Profile",             Icon:User,          children:[] },
+  { label:"User Management",     Icon:User,         children:[{ label:"Students", path:"/admin/students" },{ label:"Professors", path:"/admin/professors" },{ label:"Admins", path:"/admin/admins" }] },
+  { label:"Academic Management", Icon:BookOpen,      children:[{ label:"Student Master", path:"/admin/student-master" },{ label:"Batches", path:"/admin/batches" },{ label:"Subjects", path:"/admin/subjects" }] },
+  { label:"Learning Management", Icon:GraduationCap, children:[{ label:"Courses", path:"/admin/courses" },{ label:"Learning Paths", path:"/admin/learning-paths" }] },
+  { label:"Analytics",           Icon:BarChart2,     children:[{ label:"Platform Analytics", path:"/admin/analytics" }] },
+  { label:"Profile",             Icon:User,          children:[], path:"/admin/profile" },
 ];
 
 /* ── Component ── */
@@ -83,6 +83,11 @@ export default function AdminDashboard() {
 
   const toggleExp = (i) =>
     setExpanded((p) => p.map((v, idx) => (idx === i ? !v : v)));
+
+  const handleNavigation = (label, path) => {
+    setActive(label);
+    navigate(path);
+  };
 
   const inter = "'Inter', 'Segoe UI', system-ui, sans-serif";
 
@@ -110,22 +115,24 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div onClick={() => setActive("Dashboard")}
+        <button type="button" onClick={() => handleNavigation("Dashboard", "/admin")}
           style={{ display:"flex", alignItems:"center", gap:10,
             padding:"9px 20px", cursor:"pointer", fontSize:14, fontWeight:600,
             background: active==="Dashboard" ? "#FEF3C7" : "transparent",
             color:      active==="Dashboard" ? "#92400E"  : "#374151",
-            borderRadius:"0 20px 20px 0", marginRight:12, marginBottom:4 }}>
+            borderRadius:"0 20px 20px 0", marginRight:12, marginBottom:4,
+            border:"none", textAlign:"left", width:"100%" }}>
           <Home size={16} /> Dashboard
-        </div>
+        </button>
 
         <nav style={{ flex:1, overflowY:"auto", paddingBottom:16 }}>
-          {NAV.map(({ label, Icon, children }, i) => (
+          {NAV.map(({ label, Icon, children, path }, i) => (
             <div key={label}>
-              <div onClick={() => children.length && toggleExp(i)}
+              <button type="button" onClick={() => children.length ? toggleExp(i) : handleNavigation(label, path)}
                 style={{ display:"flex", alignItems:"center",
                   justifyContent:"space-between", padding:"9px 20px",
-                  cursor:"pointer", fontWeight:600, fontSize:13, color:"#111827" }}>
+                  cursor:"pointer", fontWeight:600, fontSize:13, color:"#111827",
+                  width:"100%", border:"none", background:"transparent", textAlign:"left" }}>
                 <span style={{ display:"flex", alignItems:"center", gap:10 }}>
                   <Icon size={15} color="#6B7280" /> {label}
                 </span>
@@ -134,17 +141,18 @@ export default function AdminDashboard() {
                     ? <ChevronDown  size={13} color="#9CA3AF" />
                     : <ChevronRight size={13} color="#9CA3AF" />
                 )}
-              </div>
+              </button>
               {expanded[i] && children.map((child) => (
-                <div key={child} onClick={() => setActive(child)}
+                <button type="button" key={child.label} onClick={() => handleNavigation(child.label, child.path)}
                   style={{ padding:"7px 20px 7px 44px", cursor:"pointer",
                     fontSize:13, fontFamily:inter,
-                    fontWeight: active===child ? 600 : 400,
-                    color:      active===child ? "#4F46E5" : "#6B7280",
-                    background: active===child ? "#EEF2FF" : "transparent",
-                    borderRadius:"0 20px 20px 0", marginRight:12 }}>
-                  {child}
-                </div>
+                    fontWeight: active===child.label ? 600 : 400,
+                    color:      active===child.label ? "#4F46E5" : "#6B7280",
+                    background: active===child.label ? "#EEF2FF" : "transparent",
+                    borderRadius:"0 20px 20px 0", marginRight:12,
+                    width:"100%", border:"none", textAlign:"left" }}>
+                  {child.label}
+                </button>
               ))}
             </div>
           ))}
@@ -259,13 +267,14 @@ export default function AdminDashboard() {
               Quick Management
             </h2>
             <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
-              {QUICK.map(({ label, desc, Icon:Ic, iconBg, iconColor }) => (
-                <div key={label}
+              {QUICK.map(({ label, desc, Icon:Ic, iconBg, iconColor, path }) => (
+                <button type="button" key={label} onClick={() => handleNavigation(label, path)}
                   style={{ flex:"1 1 200px", minWidth:0, background:"#fff",
                     borderRadius:14, padding:"18px 20px",
                     display:"flex", alignItems:"center", gap:14,
                     boxShadow:"0 1px 4px rgba(0,0,0,0.07)", cursor:"pointer",
-                    transition:"transform .15s, box-shadow .15s" }}
+                    transition:"transform .15s, box-shadow .15s", border:"1px solid #F3F4F6",
+                    textAlign:"left" }}
                   onMouseEnter={(e)=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.1)"; }}
                   onMouseLeave={(e)=>{ e.currentTarget.style.transform=""; e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.07)"; }}>
                   <div style={{ width:46, height:46, borderRadius:12, background:iconBg,
@@ -277,7 +286,7 @@ export default function AdminDashboard() {
                     <div style={{ color:"#6B7280", fontSize:12, marginTop:2, fontFamily:inter }}>{desc}</div>
                   </div>
                   <ChevronRight size={18} color="#9CA3AF"/>
-                </div>
+                </button>
               ))}
             </div>
           </section>
