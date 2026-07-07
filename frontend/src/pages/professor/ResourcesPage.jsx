@@ -52,11 +52,13 @@ function Sidebar({ onNavigate }) {
 
       {aiOpen && (
         <div className="sub-menu">
-          <button onClick={() => onNavigate("quiz-generator")}>Quiz Generator</button>
-          <button onClick={() => onNavigate("assignment-generator")}>
-            Assignment Generator
-          </button>
-          <button onClick={() => onNavigate("summary-generator")}>Summary Generator</button>
+          <button onClick={() => onNavigate("quiz-subject-select")}>Quiz Generator</button>
+<button onClick={() => onNavigate("assignment-subject-select")}>
+  Assignment Generator
+</button>
+<button onClick={() => onNavigate("summary-subject-select")}>
+  Summary Generator
+</button>
         </div>
       )}
     </aside>

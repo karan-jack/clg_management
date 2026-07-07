@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './ProfessorDashboard.css';
 import { Search, Bell, ChevronDown, ChevronUp, ChevronRight, MoveVertical as MoreVertical, BookOpen, Upload, GraduationCap, Bot, Users, ClipboardList, BookOpenCheck, Wand as Wand2, LogOut, Settings, Circle as HelpCircle, User, Folder, CalendarDays, FileQuestionMark as FileQuestion, FileText } from 'lucide-react';
 
@@ -63,16 +62,9 @@ function ActivityRow({ icon, color, title, subtitle, status, time }) {
 }
 
 export default function ProfessorDashboard({ onNavigate }) {
-  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [learningOpen, setLearningOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/login");
-  };
 
   return (
     <div className="dashboard-page">
@@ -133,15 +125,13 @@ export default function ProfessorDashboard({ onNavigate }) {
 
         {aiOpen && (
           <div className="sub-menu">
-            <button onClick={() => onNavigate('quiz-generator')}>
-              Quiz Generator
-            </button>
-            <button onClick={() => onNavigate('assignment-generator')}>
-              Assignment Generator
-            </button>
-            <button onClick={() => onNavigate('summary-generator')}>
-              Summary Generator
-            </button>
+            <button onClick={() => onNavigate("quiz-subject-select")}>Quiz Generator</button>
+<button onClick={() => onNavigate("assignment-subject-select")}>
+  Assignment Generator
+</button>
+<button onClick={() => onNavigate("summary-subject-select")}>
+  Summary Generator
+</button>
           </div>
         )}
       </aside>
@@ -194,7 +184,7 @@ export default function ProfessorDashboard({ onNavigate }) {
                   <HelpCircle size={18} /> Help & Support
                 </button>
                 <hr />
-                <button onClick={handleLogout}>
+                <button>
                   <LogOut size={18} /> Sign out
                 </button>
               </div>
