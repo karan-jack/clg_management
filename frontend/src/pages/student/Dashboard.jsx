@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
@@ -172,80 +171,99 @@ export default function Dashboard({ currentPage, setPage }) {
 // Named layout structure sub-exports to keep standard routing styles uniform
 export function MainSidebar({ currentPage, setPage }) {
   return (
-    <aside className="w-[250px] shrink-0 border-r border-[#ebdcd0] bg-[#f3eae2] px-6 py-8">
-      <h2
-        onClick={() => setPage('dashboard')}
-        className="font-serif text-2xl font-black tracking-wide text-[#0b1a30] cursor-pointer"
-      >
-        NAME
-      </h2>
-      <div className="mt-8 flex h-10 items-center rounded-lg border border-[#e3d2c4] bg-[#fcf9f6] px-3">
-        <input
-          placeholder="Search"
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
-        />
-        <span className="text-slate-500">⌕</span>
+    <aside className="w-[250px] shrink-0 border-r border-[#ebdcd0] bg-[#f3eae2] px-6 py-8 flex flex-col justify-between">
+      <div>
+        <h2
+          onClick={() => setPage('dashboard')}
+          className="font-serif text-2xl font-black tracking-wide text-[#0b1a30] cursor-pointer"
+        >
+          NAME
+        </h2>
+        <div className="mt-8 flex h-10 items-center rounded-lg border border-[#e3d2c4] bg-[#fcf9f6] px-3">
+          <input
+            placeholder="Search"
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+          />
+          <span className="text-slate-500">⌕</span>
+        </div>
+        <nav className="mt-8 flex flex-col gap-5">
+          <MenuGroup title="⚙ Academics">
+            <MenuItem
+              active={currentPage === 'academic-records'}
+              onClick={() => setPage('academic-records')}
+            >
+              ⌂ Academic Records
+            </MenuItem>
+          </MenuGroup>
+
+          <MenuGroup title="▣ Learning">
+            <MenuItem
+              active={currentPage === 'browse-courses'}
+              onClick={() => setPage('browse-courses')}
+            >
+              ⌘ Browse Courses
+            </MenuItem>
+            <MenuItem
+              active={currentPage === 'my-learning'}
+              onClick={() => setPage('my-learning')}
+            >
+              ▧ My Learning
+            </MenuItem>
+            <MenuItem
+              active={currentPage === 'learning-paths'}
+              onClick={() => setPage('learning-paths')}
+            >
+              ⇄ Learning Paths
+            </MenuItem>
+          </MenuGroup>
+
+          <MenuGroup title="♕ Gamification">
+            <MenuItem
+              active={currentPage === 'leaderboard'}
+              onClick={() => setPage('leaderboard')}
+            >
+              ⌁ Leaderboard
+            </MenuItem>
+            <MenuItem
+              active={currentPage === 'badges'}
+              onClick={() => setPage('badges')}
+            >
+              ⊙ Badges
+            </MenuItem>
+          </MenuGroup>
+
+          <MenuGroup title="▤ Portfolio">
+            <MenuItem
+              active={currentPage === 'certificates'}
+              onClick={() => setPage('certificates')}
+            >
+              ⚙ Certificates
+            </MenuItem>
+            <MenuItem
+              active={currentPage === 'publications'}
+              onClick={() => setPage('publications')}
+            >
+              ✎ Publications
+            </MenuItem>
+          </MenuGroup>
+
+          {/* NEW ADDITION: TOOLS GROUP BLOCK */}
+          <MenuGroup title="⚒ Tools">
+            <MenuItem
+              active={currentPage === 'resume-generator'}
+              onClick={() => setPage('resume-generator')}
+            >
+              🗇 Resume Generator
+            </MenuItem>
+          </MenuGroup>
+        </nav>
       </div>
-      <nav className="mt-8 flex flex-col gap-5">
-        <MenuGroup title="⚙ Academics">
-          <MenuItem
-            active={currentPage === 'academic-records'}
-            onClick={() => setPage('academic-records')}
-          >
-            ⌂ Academic Records
-          </MenuItem>
-        </MenuGroup>
-        <MenuGroup title="▣ Learning">
-          <MenuItem
-            active={currentPage === 'browse-courses'}
-            onClick={() => setPage('browse-courses')}
-          >
-            ⌘ Browse Courses
-          </MenuItem>
-          <MenuItem
-            active={currentPage === 'my-learning'}
-            onClick={() => setPage('my-learning')}
-          >
-            ▧ My Learning
-          </MenuItem>
-          <MenuItem
-            active={currentPage === 'learning-paths'}
-            onClick={() => setPage('learning-paths')}
-          >
-            ⇄ Learning Paths
-          </MenuItem>
-        </MenuGroup>
-        <MenuGroup title="♕ Gamification">
-          <MenuItem
-            active={currentPage === 'leaderboard'}
-            onClick={() => setPage('leaderboard')}
-          >
-            ⌁ Leaderboard
-          </MenuItem>
-          <MenuItem
-            active={currentPage === 'badges'}
-            onClick={() => setPage('badges')}
-          >
-            ⊙ Badges
-          </MenuItem>
-        </MenuGroup>
-        <MenuGroup title="▤ Portfolio">
-          <MenuItem>⚙ Certificates</MenuItem>
-          <MenuItem>✎ Publications</MenuItem>
-        </MenuGroup>
-      </nav>
+
+      {/* NOTE: Profile Section has been removed entirely from this bottom area per instructions */}
     </aside>
   );
 }
-
 export function Topbar({ title, showProfileCard, setShowProfileCard }) {
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/login");
-  };
-
   return (
     <header className="flex h-20 items-center justify-between border-b border-[#eaddd3] px-10">
       <h1 className="font-serif text-[26px] font-black tracking-wide text-[#0b1a30]">
@@ -275,13 +293,13 @@ export function Topbar({ title, showProfileCard, setShowProfileCard }) {
           </div>
           <span className="text-slate-500">⌄</span>
         </div>
-        {showProfileCard && <ProfileCard onLogout={handleLogout} />}
+        {showProfileCard && <ProfileCard />}
       </div>
     </header>
   );
 }
 
-function ProfileCard({ onLogout }) {
+function ProfileCard() {
   return (
     <div className="profile-card absolute right-0 top-[70px] z-50 flex w-[260px] flex-col items-center rounded-[14px] border border-[#eaddd3] bg-white p-6 text-center shadow-xl">
       <div className="mb-3 grid h-[54px] w-[54px] place-items-center rounded-full bg-[#0b1a30] text-lg font-bold text-white">
@@ -299,14 +317,6 @@ function ProfileCard({ onLogout }) {
         <div className="h-2 overflow-hidden rounded bg-[#f1eae2]">
           <div className="h-full w-[81%] rounded bg-gradient-to-r from-violet-600 to-blue-600"></div>
         </div>
-      </div>
-      <div className="w-full border-t border-[#f1eae2] pt-4 mt-4">
-        <button
-          onClick={onLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-red-50 py-2 text-sm font-bold text-red-600 hover:bg-red-100"
-        >
-          <span className="text-lg">↪</span> Log Out
-        </button>
       </div>
     </div>
   );
