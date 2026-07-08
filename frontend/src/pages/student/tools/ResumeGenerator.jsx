@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MainSidebar, Topbar } from '../Dashboard.js';
+import { MainSidebar, Topbar } from '../Dashboard';
 
 export default function ResumeGenerator({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
