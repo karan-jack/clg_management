@@ -21,6 +21,9 @@ import LearningPaths from './pages/student/courses/LearningPaths';
 import MyLearning from './pages/student/LearningPaths/MyLearning';
 import Leaderboard from './pages/student/Gamification/Leaderboard';
 import Badges from './pages/student/Gamification/Badges';
+import Certificates from './pages/student/portfolio/Certificates';
+import Publications from './pages/student/portfolio/Publications';
+import ResumeGenerator from './pages/student/tools/ResumeGenerator';
 
 // Professor Pages
 import ProfessorDashboard from './pages/professor/ProfessorDashboard';
@@ -72,7 +75,9 @@ export default function App() {
         <Route path="/student/my-learning" element={<PageAdapter component={MyLearning} role="student" pageName="my-learning" />} />
         <Route path="/student/leaderboard" element={<PageAdapter component={Leaderboard} role="student" pageName="leaderboard" />} />
         <Route path="/student/badges" element={<PageAdapter component={Badges} role="student" pageName="badges" />} />
-
+        <Route path="/student/certificates" element={<PageAdapter component={Certificates} role="student" pageName="certificates" />} />
+        <Route path="/student/publications" element={<PageAdapter component={Publications} role="student" pageName="publications" />} />
+        <Route path="/student/resume-generator" element={<PageAdapter component={ResumeGenerator} role="student" pageName="resume-generator" />} />
         {/* Professor Routes */}
         <Route path="/professor" element={<PageAdapter component={ProfessorDashboard} role="professor" pageName="dashboard" />} />
         <Route path="/professor/academic-records" element={<PageAdapter component={ProfessorAcademicRecords} role="professor" pageName="academic-records" />} />
