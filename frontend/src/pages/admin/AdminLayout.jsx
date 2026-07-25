@@ -76,13 +76,13 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
   const pageSubtitle = subtitle || "Here's what's happening on your platform today.";
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f5f0eb', fontFamily: "'Inter', 'Segoe UI', sans-serif", color: '#111827' }}>
-      <aside style={{ width: 240, background: '#fff', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#fdfaf7', fontFamily: "'Inter', 'Segoe UI', sans-serif", color: '#0b1a30' }}>
+      <aside style={{ width: 240, background: '#f3eae2', borderRight: '1px solid #ebdcd0', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '24px 20px 16px', fontWeight: 800, fontSize: 20, letterSpacing: '0.06em' }}>NAME</div>
         <div style={{ padding: '0 14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '7px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fcf9f6', border: '1px solid #e3d2c4', borderRadius: 8, padding: '7px 12px' }}>
             <Search size={14} color="#9ca3af" />
-            <input placeholder="Search..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: '#374151', width: '100%' }} />
+            <input placeholder="Search..." style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: '#0b1a30', width: '100%' }} />
           </div>
         </div>
 
@@ -103,7 +103,7 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
                     cursor: 'pointer',
                     fontWeight: 600,
                     fontSize: 13,
-                    color: '#111827',
+                    color: '#0b1a30',
                     width: '100%',
                     border: 'none',
                     background: 'transparent',
@@ -128,8 +128,8 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
                           cursor: 'pointer',
                           fontSize: 13,
                           fontWeight: isActive(child.path) ? 600 : 400,
-                          color: isActive(child.path) ? '#4f46e5' : '#6b7280',
-                          background: isActive(child.path) ? '#eef2ff' : 'transparent',
+                          color: isActive(child.path) ? '#0b1a30' : '#6b7280',
+                          background: isActive(child.path) ? '#d8cdc4' : 'transparent',
                           borderRadius: '0 20px 20px 0',
                           marginRight: 12,
                           width: '100%',
@@ -149,9 +149,9 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
       </aside>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 20 }}>
+        <header style={{ background: '#fff', borderBottom: '1px solid #eaddd3', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 20 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#111827' }}>{pageTitle}</h1>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#0b1a30' }}>{pageTitle}</h1>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>{pageSubtitle}</p>
             {breadcrumbs.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
@@ -173,22 +173,22 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
 
             <div style={{ position: 'relative' }}>
               <button type="button" onClick={() => setProfileOpen((value) => !value)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '5px 8px', borderRadius: 8, background: profileOpen ? '#f3f4f6' : 'transparent', border: 'none' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1e3a5f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>AU</div>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0b1a30', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>AU</div>
                 <div style={{ lineHeight: 1.35, textAlign: 'left' }}>
                   <div style={{ fontSize: 11, color: '#9ca3af' }}>Welcome,</div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>Admin User</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#0b1a30' }}>Admin User</div>
                 </div>
                 <ChevronDown size={13} color="#9ca3af" />
               </button>
 
               {profileOpen && (
-                <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 190, zIndex: 99, overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: '#fff', border: '1px solid #eaddd3', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 190, zIndex: 99, overflow: 'hidden' }}>
                   {[{ label: 'My Profile', icon: User }, { label: 'Account Settings', icon: Settings }, { label: 'Change Password', icon: Lock }].map(({ label, icon: Icon }) => (
-                    <div key={label} style={{ padding: '11px 16px', cursor: 'pointer', fontSize: 13, color: '#374151', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div key={label} style={{ padding: '11px 16px', cursor: 'pointer', fontSize: 13, color: '#0b1a30', display: 'flex', alignItems: 'center', gap: 10 }}>
                       <Icon size={15} color="#6b7280" /> {label}
                     </div>
                   ))}
-                  <div style={{ borderTop: '1px solid #e5e7eb' }} />
+                  <div style={{ borderTop: '1px solid #eaddd3' }} />
                   <div onClick={handleLogout} style={{ padding: '11px 16px', cursor: 'pointer', fontSize: 13, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 10 }}>
                     <LogOut size={15} color="#ef4444" /> Logout
                   </div>
@@ -198,7 +198,7 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
           </div>
         </header>
 
-        <main style={{ flex: 1, overflow: 'auto', padding: 24, background: '#f8fafc' }}>{children}</main>
+        <main style={{ flex: 1, overflow: 'auto', padding: 24, background: '#fbf8f5' }}>{children}</main>
       </div>
     </div>
   );

@@ -40,9 +40,10 @@ const STATS = [
 
 const QUICK = [
   { label:"Manage Students",       desc:"View, add and manage student records",   Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5", path:"/admin/students" },
+  { label:"Student Master",        desc:"Manage student master data",              Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5", path:"/admin/student-master" },
   { label:"Manage Professors",     desc:"View, add and manage professor records", Icon:GraduationCap, iconBg:"#F3E8FF", iconColor:"#7C3AED", path:"/admin/professors" },
   { label:"Manage Courses",        desc:"Create and manage platform courses",     Icon:BookOpen,      iconBg:"#D1FAE5", iconColor:"#059669", path:"/admin/courses" },
-  { label:"Manage Learning Paths", desc:"Create and organize learning paths",     Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C", path:"/admin/learning-paths" },
+  { label:"Learning Paths",        desc:"Create and organize learning paths",     Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C", path:"/admin/learning-paths" },
 ];
 
 const ACTIVITY = [
