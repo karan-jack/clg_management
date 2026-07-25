@@ -1,57 +1,80 @@
 const adminService = require('../services/admin');
 
-const signup = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
-    const result = await adminService.signup(req.body);
-    if (!result.success) {
-      return res.status(400).json(result);
-    }
-    return res.status(201).json(result);
+    const users = await adminService.getAllUsers();
+    res.status(200).json({ success: true, users });
   } catch (error) {
-    console.error('Signup error:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
   }
 };
 
-const login = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
-    const result = await adminService.login(req.body);
-    if (!result.success) {
-      return res.status(401).json(result);
-    }
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
-
-const me = async (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ success: false, message: 'Not authenticated' });
-  }
- 
-  const { User } = require('../models');
-  try {
-    const user = await User.findOne({
-      where: { id: req.user.userId },
-      attributes: { exclude: ['password'] }
-    });
+    const user = await adminService.getUserById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    return res.status(200).json({
-      success: true,
-      user: user
-    });
+    res.status(200).json({ success: true, user });
   } catch (error) {
-    console.error('Me error:', error);
-    return res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Error fetching user', error: error.message });
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const updatedUser = await adminService.updateUser(req.params.id, req.body);
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.status(200).json({ success: true, user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating user', error: error.message });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    await adminService.deleteUser(req.params.id);
+    res.status(200).json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting user', error: error.message });
+  }
+};
+
+const getAllStudents = async (req, res) => {
+  try {
+    const students = await adminService.getAllStudents();
+    res.status(200).json({ success: true, students });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching students', error: error.message });
+  }
+};
+
+const getAllProfessors = async (req, res) => {
+  try {
+    const professors = await adminService.getAllProfessors();
+    res.status(200).json({ success: true, professors });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching professors', error: error.message });
+  }
+};
+
+const getAdminUsers = async (req, res) => {
+  try {
+    const admins = await adminService.getAdminUsers();
+    res.status(200).json({ success: true, admins });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching admin users', error: error.message });
   }
 };
 
 module.exports = {
-  signup,
-  login,
-  me
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  getAllStudents,
+  getAllProfessors,
+  getAdminUsers
 };
