@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MainSidebar, Topbar } from './Dashboard';
+import { MainSidebar, Topbar } from '../Dashboard';
 
 // Courses list containing details needed for the CoursePage view
 const initialCoursesData = [

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { MainSidebar, Topbar } from './Dashboard';
+import { MainSidebar, Topbar } from '../Dashboard';
 
 const initialCertificatesData = [
   {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // Import the shared global layouts directly from your dashboard module
-import { MainSidebar, Topbar } from './Dashboard';
+import { MainSidebar, Topbar } from '../Dashboard';
 
 export default function AcademicRecords({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
