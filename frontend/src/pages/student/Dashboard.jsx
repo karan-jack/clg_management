@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 export default function Dashboard({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
 
+  // Added target navigation pages to stat cards
   const stats = [
-    ['👤', 'Total Courses', '12', 'bg-[#0b1a30]'],
-    ['📖', 'Courses in Progress', '5', 'bg-violet-600'],
-    ['☑', 'Completed Courses', '7', 'bg-sky-600'],
-    ['🕒', 'Total Study Hours', '128', 'bg-blue-600'],
+    ['👤', 'Total Courses', '8', 'bg-[#0b1a30]', 'my-learning'],
+    ['📖', 'Courses in Progress', '6', 'bg-violet-600', 'my-learning'],
+    ['☑', 'Completed Courses', '2', 'bg-sky-600', 'my-learning'],
+    ['🕒', 'Total Study Hours', '128', 'bg-blue-600', null],
   ];
 
   const analytics = [
@@ -36,7 +37,7 @@ export default function Dashboard({ currentPage, setPage }) {
     <MainSidebar currentPage={currentPage} setPage={setPage} />
   );
   const SharedTopbar = (props) => (
-    <Topbar {...props} title="STUDENT DASHBOARD" />
+    <Topbar {...props} title="STUDENT DASHBOARD" setPage={setPage} />
   );
 
   return (
@@ -59,10 +60,15 @@ export default function Dashboard({ currentPage, setPage }) {
 
           {/* Stats Metrics Grid */}
           <div className="mt-6 grid grid-cols-4 gap-5">
-            {stats.map(([icon, title, value, color]) => (
+            {stats.map(([icon, title, value, color, targetPage]) => (
               <div
                 key={title}
-                className="rounded-xl border border-[#eae1d8] bg-white p-5"
+                onClick={() => targetPage && setPage(targetPage)}
+                className={`rounded-xl border border-[#eae1d8] bg-white p-5 transition-all duration-200 ${
+                  targetPage
+                    ? 'cursor-pointer hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-sm'
+                    : ''
+                }`}
               >
                 <div className="flex items-start gap-4">
                   <div
@@ -91,7 +97,8 @@ export default function Dashboard({ currentPage, setPage }) {
             {analytics.map(([title, percent, color]) => (
               <div
                 key={title}
-                className={`flex min-h-[180px] flex-col justify-between rounded-2xl bg-gradient-to-br ${color} p-6 text-white`}
+                onClick={() => setPage('my-learning')}
+                className={`flex min-h-[180px] cursor-pointer flex-col justify-between rounded-2xl bg-gradient-to-br ${color} p-6 text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md`}
               >
                 <div>
                   <h3 className="text-sm font-semibold">{title}</h3>
@@ -123,7 +130,7 @@ export default function Dashboard({ currentPage, setPage }) {
             {tools.map(([icon, title, desc]) => (
               <div
                 key={title}
-                className="flex items-center gap-4 rounded-xl border border-[#e5d5c8] bg-[#f1eae2] p-5"
+                className="flex items-center gap-4 rounded-xl border border-[#e5d5c8] bg-[#f1eae2] p-5 cursor-pointer transition hover:bg-[#e8ddd2]"
               >
                 <div className="grid h-11 w-11 place-items-center rounded-full border border-[#e5d5c8] bg-white">
                   {icon}
@@ -147,7 +154,7 @@ export default function Dashboard({ currentPage, setPage }) {
             {activities.map(([title, time]) => (
               <div
                 key={title}
-                className="flex items-center border-b border-[#e8ddd3] px-6 py-4 last:border-b-0"
+                className="flex items-center border-b border-[#e8ddd3] px-6 py-4 last:border-b-0 cursor-pointer transition hover:bg-[#ebdcd0]"
               >
                 <div className="mr-4 grid h-[34px] w-[34px] place-items-center rounded-md bg-blue-50 text-blue-600">
                   📄
@@ -247,7 +254,6 @@ export function MainSidebar({ currentPage, setPage }) {
             </MenuItem>
           </MenuGroup>
 
-          {/* NEW ADDITION: TOOLS GROUP BLOCK */}
           <MenuGroup title="⚒ Tools">
             <MenuItem
               active={currentPage === 'resume-generator'}
@@ -258,67 +264,125 @@ export function MainSidebar({ currentPage, setPage }) {
           </MenuGroup>
         </nav>
       </div>
-
-      {/* NOTE: Profile Section has been removed entirely from this bottom area per instructions */}
     </aside>
   );
 }
-export function Topbar({ title, showProfileCard, setShowProfileCard }) {
+
+export function Topbar({
+  title,
+  showProfileCard,
+  setShowProfileCard,
+  setPage,
+}) {
   return (
-    <header className="flex h-20 items-center justify-between border-b border-[#eaddd3] px-10">
+    <header className="flex h-20 items-center justify-between border-b border-[#eaddd3] px-10 bg-white/50">
       <h1 className="font-serif text-[26px] font-black tracking-wide text-[#0b1a30]">
-        {title || 'LEARNING PATHS'}
+        {title}
       </h1>
-      <div
-        className="relative py-2"
-        onMouseEnter={() => setShowProfileCard(true)}
-        onMouseLeave={() => setShowProfileCard(false)}
-      >
-        <div
-          onClick={() => setShowProfileCard(!showProfileCard)}
-          className="flex cursor-pointer items-center gap-4"
+
+      <div className="flex items-center gap-6">
+        {/* Independent Notification Bell */}
+        <button
+          type="button"
+          className="relative text-xl cursor-pointer hover:opacity-80 transition"
         >
-          <div className="relative text-xl">
-            🔔
-            <span className="absolute -right-1 -top-1 grid h-[15px] w-[15px] place-items-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-              3
-            </span>
+          🔔
+          <span className="absolute -right-1 -top-1 grid h-[15px] w-[15px] place-items-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+            3
+          </span>
+        </button>
+
+        {/* Profile Card & Dropdown Trigger */}
+        <div className="relative">
+          <div
+            onClick={() => setShowProfileCard(!showProfileCard)}
+            className="flex cursor-pointer items-center gap-3 rounded-full py-1 px-2 hover:bg-slate-100/60 transition"
+          >
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#0b1a30] text-sm font-bold text-white shadow-sm">
+              ST
+            </div>
+
+            <div className="text-left">
+              <p className="text-[10px] font-bold text-slate-400 leading-tight">
+                Welcome,
+              </p>
+              <h4 className="text-[13px] font-bold text-[#0b1a30] leading-tight">
+                Student
+              </h4>
+            </div>
+
+            <span className="text-slate-500 text-xs ml-1">⌄</span>
           </div>
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-[#0b1a30] text-sm font-bold text-white">
-            ST
-          </div>
-          <div>
-            <small className="block text-[11px] text-slate-500">Welcome,</small>
-            <h4 className="text-[13px] font-bold text-[#0b1a30]">Student</h4>
-          </div>
-          <span className="text-slate-500">⌄</span>
+
+          {/* Profile Card Overlay */}
+          {showProfileCard && (
+            <div className="profile-card absolute right-0 top-[60px] z-50 flex w-[280px] flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl text-center">
+              {/* Avatar */}
+              <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full bg-[#0b1a30] text-xl font-bold text-white shadow-md">
+                ST
+              </div>
+
+              {/* Student Info */}
+              <h3 className="text-lg font-extrabold text-[#0b1a30] mb-0.5">
+                Student
+              </h3>
+              <p className="text-xs font-semibold text-slate-400 mb-5">
+                Semester 4 • Electrical Engineering
+              </p>
+
+              {/* Level & XP */}
+              <div className="flex items-center justify-between text-xs font-bold mb-2">
+                <span className="text-slate-700">Level 12</span>
+                <span className="text-slate-400">2,450 / 3,000 XP</span>
+              </div>
+
+              {/* Level Bar */}
+              <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden mb-5">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
+                  style={{ width: '81.6%' }}
+                />
+              </div>
+
+              {/* Options Below Level Bar */}
+              <div className="border-t border-slate-100 pt-3 flex flex-col gap-1 text-left">
+                <button
+                  onClick={() => {
+                    setPage && setPage('settings');
+                    setShowProfileCard(false);
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  <span className="text-slate-400">⚙</span> Account Settings
+                </button>
+
+                <button
+                  onClick={() => {
+                    setPage && setPage('change-password');
+                    setShowProfileCard(false);
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  <span className="text-slate-400">🔒</span> Change Password
+                </button>
+
+                <div className="my-1 border-t border-slate-100" />
+
+                <button
+                  onClick={() => {
+                    setPage && setPage('logout');
+                    setShowProfileCard(false);
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition"
+                >
+                  <span className="text-red-500">↳</span> Logout
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-        {showProfileCard && <ProfileCard />}
       </div>
     </header>
-  );
-}
-
-function ProfileCard() {
-  return (
-    <div className="profile-card absolute right-0 top-[70px] z-50 flex w-[260px] flex-col items-center rounded-[14px] border border-[#eaddd3] bg-white p-6 text-center shadow-xl">
-      <div className="mb-3 grid h-[54px] w-[54px] place-items-center rounded-full bg-[#0b1a30] text-lg font-bold text-white">
-        ST
-      </div>
-      <h3 className="text-base font-bold text-[#0b1a30]">Student</h3>
-      <p className="mb-5 mt-1 text-xs text-slate-500">
-        Semester 4 • Electrical Engineering
-      </p>
-      <div className="w-full border-t border-[#f1eae2] pt-4">
-        <div className="mb-2 flex justify-between text-xs font-bold text-[#0b1a30]">
-          <span>Level 12</span>
-          <span className="font-medium text-slate-500">2,450 / 3,000 XP</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded bg-[#f1eae2]">
-          <div className="h-full w-[81%] rounded bg-gradient-to-r from-violet-600 to-blue-600"></div>
-        </div>
-      </div>
-    </div>
   );
 }
 

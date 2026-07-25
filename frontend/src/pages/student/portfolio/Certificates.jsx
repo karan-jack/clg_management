@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { MainSidebar, Topbar } from '../Dashboard';
+import { MainSidebar, Topbar } from './Dashboard';
 
 const initialCertificatesData = [
   {
@@ -121,8 +121,8 @@ export default function Certificates({ currentPage, setPage }) {
 
   return (
     <div className="flex min-h-screen bg-[#fdfaf7] text-slate-900">
-      {/* Overridden local sidebar variant matching your structural design edits */}
-      <CustomSidebar currentPage={currentPage} setPage={setPage} />
+      {/* Replaced outdated CustomSidebar with your live central MainSidebar layout */}
+      <MainSidebar currentPage={currentPage} setPage={setPage} />
 
       <main className="min-w-0 flex-1 bg-[#fbf8f5]">
         <Topbar
@@ -382,6 +382,7 @@ function SummaryCard({ title, val, sub, icon, color }) {
   );
 }
 
+// Dropdown Helper Component
 function ToolbarSelect({ label, value, onChange, options }) {
   return (
     <div className="flex flex-col min-w-[140px]">
@@ -397,120 +398,5 @@ function ToolbarSelect({ label, value, onChange, options }) {
         ))}
       </select>
     </div>
-  );
-}
-
-// Updated Sidebar Component with Publications swapped in place of Projects
-function CustomSidebar({ currentPage, setPage }) {
-  return (
-    <aside className="w-[250px] shrink-0 border-r border-[#ebdcd0] bg-[#f3eae2] px-6 py-8">
-      <h2
-        onClick={() => setPage('dashboard')}
-        className="font-serif text-2xl font-black tracking-wide text-[#0b1a30] cursor-pointer"
-      >
-        NAME
-      </h2>
-      <div className="mt-8 flex h-10 items-center rounded-lg border border-[#e3d2c4] bg-[#fcf9f6] px-3">
-        <input
-          placeholder="Search"
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
-        />
-        <span className="text-slate-500">⌕</span>
-      </div>
-      <nav className="mt-8 flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-bold text-[#0b1a30]">⚙ Academics</p>
-          <button
-            onClick={() => setPage('academic-records')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'academic-records'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ⌂ Academic Records
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-bold text-[#0b1a30]">▣ Learning</p>
-          <button
-            onClick={() => setPage('browse-courses')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'browse-courses'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ⌘ Browse Courses
-          </button>
-          <button
-            onClick={() => setPage('my-learning')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'my-learning'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ▧ My Learning
-          </button>
-          <button
-            onClick={() => setPage('learning-paths')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'learning-paths'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ⇄ Learning Paths
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-bold text-[#0b1a30]">♕ Gamification</p>
-          <button
-            onClick={() => setPage('leaderboard')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'leaderboard'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ⌁ Leaderboard
-          </button>
-          <button
-            onClick={() => setPage('badges')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'badges'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ⊙ Badges
-          </button>
-        </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-bold text-[#0b1a30]">▤ Portfolio</p>
-          <button
-            onClick={() => setPage('certificates')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'certificates'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ⚙ Certificates
-          </button>
-          <button
-            onClick={() => setPage('publications')}
-            className={`text-left text-[13px] py-1.5 pl-4 rounded ${
-              currentPage === 'publications'
-                ? 'bg-[#d8cdc4] font-bold text-[#0b1a30]'
-                : 'text-slate-500'
-            }`}
-          >
-            ✎ Publications
-          </button>
-        </div>
-      </nav>
-    </aside>
   );
 }
