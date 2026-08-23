@@ -9,6 +9,7 @@ module.exports = {
         department: 'ECE',
         semester: 7,
         section: 'A',
+        batch_id: 1,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -18,6 +19,7 @@ module.exports = {
         department: 'ECE',
         semester: 7,
         section: 'A',
+        batch_id: 1,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -27,6 +29,7 @@ module.exports = {
         department: 'CSE',
         semester: 7,
         section: 'B',
+        batch_id: 1,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -36,6 +39,7 @@ module.exports = {
         department: 'CSE',
         semester: 7,
         section: 'B',
+        batch_id: 1,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -45,10 +49,11 @@ module.exports = {
         department: 'ME',
         semester: 7,
         section: 'A',
+        batch_id: 1,
         created_at: new Date(),
         updated_at: new Date()
       }
-    ], { ignoreDuplicates: true });
+    ], {});
   },
 
   down: async (queryInterface, Sequelize) => {
