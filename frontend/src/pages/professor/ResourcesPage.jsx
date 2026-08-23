@@ -10,10 +10,7 @@ function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <h1>NAME</h1>
 
-      <div className="search-box">
-        <input placeholder="Search" />
-        <Search size={20} />
-      </div>
+
 
       <button onClick={() => onNavigate("academic-records")} className="side-item">
         <BookOpen size={23} />
@@ -35,7 +32,7 @@ function Sidebar({ onNavigate }) {
       {learningOpen && (
         <div className="sub-menu">
           <button onClick={() => onNavigate("assigned-courses")}>Assigned Courses</button>
-          <button onClick={() => onNavigate("modules")}>Modules</button>
+
           <button onClick={() => onNavigate("resources")} className="active-sub-side">
             Resources
           </button>
@@ -111,17 +108,7 @@ function Topbar() {
   );
 }
 
-const resources = [
-  [1, "DSA Previous Year Questions (2023).pdf", "PYQ", "12 May 2024", "Shubhabrata B.", "pdf"],
-  [2, "DSA Previous Year Questions (2022).pdf", "PYQ", "12 May 2024", "Shubhabrata B.", "pdf"],
-  [3, "Data Structures - Study Notes.pdf", "Notes", "05 May 2024", "Shubhabrata B.", "pdf"],
-  [4, "Important Topics & Suggestions.pdf", "Suggestions", "05 May 2024", "Shubhabrata B.", "pdf"],
-  [5, "Linked List - Summary.docx", "Notes", "28 Apr 2024", "Shubhabrata B.", "docx"],
-  [6, "DSA Previous Year Questions (2021).pdf", "PYQ", "20 Apr 2024", "Shubhabrata B.", "pdf"],
-  [7, "Stack and Queue - Study Material.pdf", "Notes", "15 Apr 2024", "Shubhabrata B.", "pdf"],
-  [8, "Graph - Important Questions.pdf", "Suggestions", "10 Apr 2024", "Shubhabrata B.", "pdf"],
-  [9, "Data Structures - Revision Guide.pptx", "Notes", "02 Apr 2024", "Shubhabrata B.", "pptx"],
-];
+const resources = [];
 
 function typeClass(type) {
   if (type === "PYQ") return "type-pyq";
@@ -144,40 +131,7 @@ export default function ResourcesPage({ onNavigate }) {
         <Topbar />
 
         <section className="content">
-          <div className="resources-course-box">
-            <div className="resources-course-left">
-              <div className="resources-course-icon">
-                <BookOpen size={34} />
-              </div>
 
-              <div className="resources-course-info">
-                <h3>Data Structures</h3>
-                <p>
-                  Batch: 2024-2028
-                  <span>|</span>
-                  Semester: 3
-                </p>
-              </div>
-            </div>
-
-            <div className="resources-stats">
-              <div className="resources-stat-card">
-                <Users size={28} />
-                <div>
-                  <p>Students Enrolled</p>
-                  <h4>120</h4>
-                </div>
-              </div>
-
-              <div className="resources-stat-card">
-                <BookOpen size={28} />
-                <div>
-                  <p>Total Resources</p>
-                  <h4>18</h4>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div className="resources-panel">
             <div className="resources-panel-header">
@@ -209,37 +163,43 @@ export default function ResourcesPage({ onNavigate }) {
               </thead>
 
               <tbody>
-                {resources.map((item) => (
-                  <tr key={item[0]}>
-                    <td>{item[0]}</td>
-                    <td>
-                      <span className={`file-badge ${fileClass(item[5])}`}>
-                        <FileText size={15} />
-                      </span>
-                    </td>
-                    <td>{item[1]}</td>
-                    <td>
-                      <span className={`resource-type ${typeClass(item[2])}`}>
-                        {item[2]}
-                      </span>
-                    </td>
-                    <td>{item[3]}</td>
-                    <td>{item[4]}</td>
-                    <td>
-                      <div className="resource-action-buttons">
-                        <button className="resource-action-btn edit-btn">
-                          <Pencil size={16} />
-                        </button>
-                        <button className="resource-action-btn save-module-btn">
-                          <Save size={16} />
-                        </button>
-                        <button className="resource-action-btn delete-btn">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                {resources.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>No resources available.</td>
                   </tr>
-                ))}
+                ) : (
+                  resources.map((item) => (
+                    <tr key={item[0]}>
+                      <td>{item[0]}</td>
+                      <td>
+                        <span className={`file-badge ${fileClass(item[5])}`}>
+                          <FileText size={15} />
+                        </span>
+                      </td>
+                      <td>{item[1]}</td>
+                      <td>
+                        <span className={`resource-type ${typeClass(item[2])}`}>
+                          {item[2]}
+                        </span>
+                      </td>
+                      <td>{item[3]}</td>
+                      <td>{item[4]}</td>
+                      <td>
+                        <div className="resource-action-buttons">
+                          <button className="resource-action-btn edit-btn">
+                            <Pencil size={16} />
+                          </button>
+                          <button className="resource-action-btn save-module-btn">
+                            <Save size={16} />
+                          </button>
+                          <button className="resource-action-btn delete-btn">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
 

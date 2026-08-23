@@ -1,43 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
+import { Loader2 } from 'lucide-react';
 
 export default function Dashboard({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
 
-  // Added target navigation pages to stat cards
-  const stats = [
-    ['👤', 'Total Courses', '8', 'bg-[#0b1a30]', 'my-learning'],
-    ['📖', 'Courses in Progress', '6', 'bg-violet-600', 'my-learning'],
-    ['☑', 'Completed Courses', '2', 'bg-sky-600', 'my-learning'],
-    ['🕒', 'Total Study Hours', '128', 'bg-blue-600', null],
-  ];
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const analytics = [
-    ['Electrical Engineering', 24, 'from-violet-800 to-violet-600'],
-    ['DBMS', 31, 'from-sky-700 to-sky-500'],
-    ['Data Structures', 56, 'from-green-700 to-green-500'],
-    ['Operating Systems', 68, 'from-orange-700 to-orange-500'],
-  ];
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  const tools = [
-    ['📅', 'Study Planner', 'Plan your study schedule and stay on track.'],
-    ['📋', 'Assignments', 'View and submit your assignments and projects.'],
-    ['📄', 'Notes', 'Access your saved notes and important resources.'],
-    ['📊', 'Performance', 'Track your progress and improvement over time.'],
-  ];
-
-  const activities = [
-    ['Physics Module 4 uploaded', '5 hours ago'],
-    ['Chemistry module 6 completed', '1 day ago'],
-    ['3 new badges earned', '2 days ago'],
-    ['Quiz completed: Mathematics - Chapter 3', '3 days ago'],
-  ];
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getStudentDashboard();
+      setData(res.data);
+    } catch (err) {
+      if (err.status === 401) window.location.href = '/login';
+      setError(err.message || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Extracted layout wrappers to serve navigation globally
   const SharedSidebar = () => (
     <MainSidebar currentPage={currentPage} setPage={setPage} />
   );
   const SharedTopbar = (props) => (
-    <Topbar {...props} title="STUDENT DASHBOARD" setPage={setPage} />
+    <Topbar {...props} title="STUDENT DASHBOARD" setPage={setPage} studentInfo={data?.studentInfo} />
   );
 
   return (
@@ -52,42 +46,55 @@ export default function Dashboard({ currentPage, setPage }) {
 
         <section className="px-10 py-8">
           <h2 className="font-serif text-2xl font-black text-[#0b1a30]">
-            Welcome back, Student !
+            Welcome back, {data?.studentInfo?.name || 'Student'}!
           </h2>
           <p className="mt-1 text-sm text-slate-500">
             Here's your learning overview.
           </p>
 
-          {/* Stats Metrics Grid */}
-          <div className="mt-6 grid grid-cols-4 gap-5">
-            {stats.map(([icon, title, value, color, targetPage]) => (
-              <div
-                key={title}
-                onClick={() => targetPage && setPage(targetPage)}
-                className={`rounded-xl border border-[#eae1d8] bg-white p-5 transition-all duration-200 ${
-                  targetPage
-                    ? 'cursor-pointer hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-sm'
-                    : ''
-                }`}
-              >
-                <div className="flex items-start gap-4">
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="animate-spin text-blue-600" size={40} />
+            </div>
+          ) : error ? (
+            <div className="text-red-500 p-5">{error}</div>
+          ) : (
+            <>
+              {/* Stats Metrics Grid */}
+              <div className="mt-6 grid grid-cols-4 gap-5">
+                {[
+                  ['👤', 'Total Courses', data?.studentInfo?.enrolledCourseCount || 0, 'bg-[#0b1a30]', 'my-learning'],
+                  ['📖', 'Courses in Progress', Math.max(0, (data?.studentInfo?.enrolledCourseCount || 0) - (data?.studentInfo?.completedCourseCount || 0)), 'bg-violet-600', 'my-learning'],
+                  ['☑', 'Completed Courses', data?.studentInfo?.completedCourseCount || 0, 'bg-sky-600', 'my-learning'],
+                  ['⭐', 'Total XP', data?.studentInfo?.currentXp || 0, 'bg-blue-600', null],
+                ].map(([icon, title, value, color, targetPage]) => (
                   <div
-                    className={`grid h-[42px] w-[42px] place-items-center rounded-lg text-white ${color}`}
+                    key={title}
+                    onClick={() => targetPage && setPage(targetPage)}
+                    className={`rounded-xl border border-[#eae1d8] bg-white p-5 transition-all duration-200 ${
+                      targetPage
+                        ? 'cursor-pointer hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-sm'
+                        : ''
+                    }`}
                   >
-                    {icon}
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`grid h-[42px] w-[42px] place-items-center rounded-lg text-white ${color}`}
+                      >
+                        {icon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-500">
+                          {title}
+                        </p>
+                        <h2 className="mt-2 text-3xl font-bold text-[#0b1a30]">
+                          {value}
+                        </h2>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">
-                      {title}
-                    </p>
-                    <h2 className="mt-2 text-3xl font-bold text-[#0b1a30]">
-                      {value}
-                    </h2>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
 
           {/* Analytics Progression Blocks */}
           <h2 className="mt-8 font-serif text-lg font-black text-[#0b1a30]">
@@ -122,53 +129,65 @@ export default function Dashboard({ currentPage, setPage }) {
             ))}
           </div>
 
-          {/* Tools Grid */}
-          <h2 className="mt-8 font-serif text-lg font-black text-[#0b1a30]">
-            My Learning Tools
-          </h2>
-          <div className="mt-4 grid grid-cols-4 gap-5">
-            {tools.map(([icon, title, desc]) => (
-              <div
-                key={title}
-                className="flex items-center gap-4 rounded-xl border border-[#e5d5c8] bg-[#f1eae2] p-5 cursor-pointer transition hover:bg-[#e8ddd2]"
-              >
-                <div className="grid h-11 w-11 place-items-center rounded-full border border-[#e5d5c8] bg-white">
-                  {icon}
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-bold text-[#0b1a30]">{title}</h4>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    {desc}
-                  </p>
-                </div>
-                <span className="text-xl text-slate-400">›</span>
+              {/* Tools Grid */}
+              <h2 className="mt-8 font-serif text-lg font-black text-[#0b1a30]">
+                My Learning Tools
+              </h2>
+              <div className="mt-4 grid grid-cols-4 gap-5">
+                {[
+                  ['📅', 'Study Planner', 'Plan your study schedule and stay on track.', 'tools'],
+                  ['📋', 'Assignments', 'View and submit your assignments and projects.', 'tools'],
+                  ['📄', 'Notes', 'Access your saved notes and important resources.', 'tools'],
+                  ['📊', 'Performance', 'Track your progress and improvement over time.', 'academic-records'],
+                ].map(([icon, title, desc, target]) => (
+                  <div
+                    key={title}
+                    onClick={() => setPage(target)}
+                    className="flex items-center gap-4 rounded-xl border border-[#e5d5c8] bg-[#f1eae2] p-5 cursor-pointer transition hover:bg-[#e8ddd2]"
+                  >
+                    <div className="grid h-11 w-11 place-items-center rounded-full border border-[#e5d5c8] bg-white">
+                      {icon}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-[#0b1a30]">{title}</h4>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        {desc}
+                      </p>
+                    </div>
+                    <span className="text-xl text-slate-400">›</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Recent Activity Log */}
-          <h2 className="mt-8 font-serif text-lg font-black text-[#0b1a30]">
-            Recent Activity
-          </h2>
-          <div className="mt-4 overflow-hidden rounded-xl border border-[#e3d2c4] bg-[#f3eae2]">
-            {activities.map(([title, time]) => (
-              <div
-                key={title}
-                className="flex items-center border-b border-[#e8ddd3] px-6 py-4 last:border-b-0 cursor-pointer transition hover:bg-[#ebdcd0]"
-              >
-                <div className="mr-4 grid h-[34px] w-[34px] place-items-center rounded-md bg-blue-50 text-blue-600">
-                  📄
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-[#0b1a30]">
-                    {title}
-                  </h4>
-                  <p className="mt-1 text-xs text-slate-500">{time}</p>
-                </div>
-                <span className="text-xl text-slate-400">›</span>
+              {/* Recent Activity Log */}
+              <h2 className="mt-8 font-serif text-lg font-black text-[#0b1a30]">
+                Recent Activity
+              </h2>
+              <div className="mt-4 overflow-hidden rounded-xl border border-[#e3d2c4] bg-[#f3eae2]">
+                {data?.recentActivities && data.recentActivities.length > 0 ? (
+                  data.recentActivities.map((activity, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center border-b border-[#e8ddd3] px-6 py-4 last:border-b-0 cursor-pointer transition hover:bg-[#ebdcd0]"
+                    >
+                      <div className="mr-4 grid h-[34px] w-[34px] place-items-center rounded-md bg-blue-50 text-blue-600">
+                        📄
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-[#0b1a30]">
+                          {activity.title || activity.type}
+                        </h4>
+                        <p className="mt-1 text-xs text-slate-500">{new Date(activity.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <span className="text-xl text-slate-400">›</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-6 py-4 text-sm text-slate-500">No recent activities found.</div>
+                )}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </section>
       </main>
     </div>
@@ -273,7 +292,15 @@ export function Topbar({
   showProfileCard,
   setShowProfileCard,
   setPage,
+  studentInfo
 }) {
+  const name = studentInfo?.name || 'Student';
+  const initials = name.substring(0, 2).toUpperCase();
+  const department = studentInfo?.department || 'Department';
+  const semester = studentInfo?.semester || 1;
+  const xp = studentInfo?.currentXp || 0;
+  const level = Math.floor(xp / 1000) + 1;
+
   return (
     <header className="flex h-20 items-center justify-between border-b border-[#eaddd3] px-10 bg-white/50">
       <h1 className="font-serif text-[26px] font-black tracking-wide text-[#0b1a30]">
@@ -299,7 +326,7 @@ export function Topbar({
             className="flex cursor-pointer items-center gap-3 rounded-full py-1 px-2 hover:bg-slate-100/60 transition"
           >
             <div className="grid h-10 w-10 place-items-center rounded-full bg-[#0b1a30] text-sm font-bold text-white shadow-sm">
-              ST
+              {initials}
             </div>
 
             <div className="text-left">
@@ -307,7 +334,7 @@ export function Topbar({
                 Welcome,
               </p>
               <h4 className="text-[13px] font-bold text-[#0b1a30] leading-tight">
-                Student
+                {name}
               </h4>
             </div>
 
@@ -319,21 +346,21 @@ export function Topbar({
             <div className="profile-card absolute right-0 top-[60px] z-50 flex w-[280px] flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl text-center">
               {/* Avatar */}
               <div className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full bg-[#0b1a30] text-xl font-bold text-white shadow-md">
-                ST
+                {initials}
               </div>
 
               {/* Student Info */}
               <h3 className="text-lg font-extrabold text-[#0b1a30] mb-0.5">
-                Student
+                {name}
               </h3>
               <p className="text-xs font-semibold text-slate-400 mb-5">
-                Semester 4 • Electrical Engineering
+                Semester {semester} • {department}
               </p>
 
               {/* Level & XP */}
               <div className="flex items-center justify-between text-xs font-bold mb-2">
-                <span className="text-slate-700">Level 12</span>
-                <span className="text-slate-400">2,450 / 3,000 XP</span>
+                <span className="text-slate-700">Level {level}</span>
+                <span className="text-slate-400">{xp} / {level * 1000} XP</span>
               </div>
 
               {/* Level Bar */}

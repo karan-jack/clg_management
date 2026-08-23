@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ProfessorDashboard.css";
 import { Search, Bell, ChevronDown, ChevronUp, BookOpen, Upload, GraduationCap, Bot, Settings, Circle as HelpCircle, User, LogOut, ListFilter as Filter, Save } from "lucide-react";
 
@@ -10,10 +10,7 @@ function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <h1>NAME</h1>
 
-      <div className="search-box">
-        <input placeholder="Search" />
-        <Search size={20} />
-      </div>
+
 
       <button onClick={() => onNavigate("academic-records")} className="side-item">
         <BookOpen size={23} />
@@ -33,7 +30,7 @@ function Sidebar({ onNavigate }) {
       {learningOpen && (
         <div className="sub-menu">
           <button onClick={() => onNavigate("assigned-courses")}>Assigned Courses</button>
-          <button onClick={() => onNavigate("modules")}>Modules</button>
+
           <button onClick={() => onNavigate("resources")}>Resources</button>
           <button onClick={() => onNavigate("quizzes")}>Quizzes</button>
         </div>
@@ -105,34 +102,65 @@ function Topbar() {
   );
 }
 
-const students = [
-  ["ENR2021001", "Aarav Sharma", "2024-2028", "Electronics", "Semester 3", 35, 78],
-  ["ENR2021002", "Diya Patel", "2024-2028", "Electronics", "Semester 3", 40, 85],
-  ["ENR2021003", "Rohan Verma", "2024-2028", "Electronics", "Semester 3", 32, 70],
-  ["ENR2021004", "Sneha Iyer", "2024-2028", "Electronics", "Semester 3", 45, 92],
-  ["ENR2021005", "Karan Mehta", "2024-2028", "Electronics", "Semester 3", 38, 88],
-  ["ENR2021006", "Ananya Singh", "2024-2028", "Electronics", "Semester 3", 42, 90],
-  ["ENR2021007", "Manav Gupta", "2024-2028", "Electronics", "Semester 3", 30, 65],
-  ["ENR2021008", "Pooja Nair", "2024-2028", "Electronics", "Semester 3", 44, 91],
-  ["ENR2021009", "Aditya Malhotra", "2024-2028", "Electronics", "Semester 3", 36, 72],
-  ["ENR2021010", "Ishita Roy", "2024-2028", "Electronics", "Semester 3", 41, 89],
-];
-
 export default function UploadMarks({ onNavigate }) {
-  const [marks, setMarks] = useState(students);
+  const [courses, setCourses] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [marks, setMarks] = useState({});
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectWarning, setSubjectWarning] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  function updateMark(index, column, value) {
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    if (selectedSubject) {
+      fetchStudents(selectedSubject);
+    } else {
+      setStudents([]);
+      setMarks({});
+    }
+  }, [selectedSubject]);
+
+  const fetchCourses = async () => {
+    try {
+      const res = await window.api?.getProfessorCourses?.() || await import('../../services/api').then(m => m.default.getProfessorCourses());
+      setCourses(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchStudents = async (courseId) => {
+    try {
+      setLoading(true);
+      const res = await window.api?.getProfessorStudents?.(`?courseId=${courseId}`) || await import('../../services/api').then(m => m.default.getProfessorStudents(`?courseId=${courseId}`));
+      setStudents(res.data || []);
+      const initialMarks = {};
+      (res.data || []).forEach(s => {
+        initialMarks[s.student_id] = { lab: '', theory: '' };
+      });
+      setMarks(initialMarks);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  function updateMark(studentId, type, value) {
     if (!selectedSubject) {
       setSubjectWarning("Select your Subject");
       return;
     }
-  
-    const updated = [...marks];
-    updated[index][column] = value;
-    setMarks(updated);
+    setMarks(prev => ({
+      ...prev,
+      [studentId]: { ...prev[studentId], [type]: value }
+    }));
   }
+
   function handleMarksClick() {
     if (!selectedSubject) {
       setSubjectWarning("Select your Subject");
@@ -140,7 +168,48 @@ export default function UploadMarks({ onNavigate }) {
   }
 
   function resetMarks() {
-    setMarks(students);
+    const emptyMarks = {};
+    students.forEach(s => { emptyMarks[s.student_id] = { lab: '', theory: '' }; });
+    setMarks(emptyMarks);
+  }
+
+  async function handleSave() {
+    if (!selectedSubject) return setSubjectWarning("Select your Subject");
+    setSaving(true);
+    try {
+      for (const student of students) {
+        const studentMarks = marks[student.student_id];
+        if (studentMarks.lab !== '' || studentMarks.theory !== '') {
+          const lab = studentMarks.lab ? parseInt(studentMarks.lab) : 0;
+          const theory = studentMarks.theory ? parseInt(studentMarks.theory) : 0;
+
+          if (lab < 0 || lab > 50) {
+            setSubjectWarning(`Invalid lab marks for ${student.name}. Must be 0-50.`);
+            setSaving(false);
+            return;
+          }
+          if (theory < 0 || theory > 100) {
+            setSubjectWarning(`Invalid theory marks for ${student.name}. Must be 0-100.`);
+            setSaving(false);
+            return;
+          }
+
+          await (window.api?.submitMarks || import('../../services/api').then(m => m.default.submitMarks))({
+            student_id: student.student_id,
+            course_id: selectedSubject,
+            semester: student.semester,
+            lab_marks: lab,
+            theory_marks: theory
+          });
+        }
+      }
+      alert('Marks saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save some marks.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -179,17 +248,17 @@ export default function UploadMarks({ onNavigate }) {
             <div className="filter-field">
               <label>Select Subject</label>
               <select
-  value={selectedSubject}
-  onChange={(event) => {
-    setSelectedSubject(event.target.value);
-    setSubjectWarning("");
-  }}
->
-  <option value="">Select Subject</option>
-  <option value="Data Structures">Data Structures</option>
-  <option value="Algorithms">Algorithms</option>
-  <option value="Database Systems">Database Systems</option>
-</select>
+                value={selectedSubject}
+                onChange={(event) => {
+                  setSelectedSubject(event.target.value);
+                  setSubjectWarning("");
+                }}
+              >
+                <option value="">Select Subject</option>
+                {courses.map(course => (
+                  <option key={course.id} value={course.id}>{course.title} ({course.code})</option>
+                ))}
+              </select>
             </div>
 
             <button className="export-btn">
@@ -219,36 +288,40 @@ export default function UploadMarks({ onNavigate }) {
               </thead>
 
               <tbody>
-                {marks.map((student, index) => (
-                  <tr key={student[0]}>
-                  <td>{student[0]}</td>
-                  <td>{student[1]}</td>
-                  <td>{student[2]}</td>
-                  <td>{student[3]}</td>
-                  <td>{student[4]}</td>
-                  <td>
-                    <input
-                      type="number"
-                      value={selectedSubject ? student[5] : ""}
-                      placeholder={selectedSubject ? "" : "Select your Subject"}
-                      min="0"
-                      max="50"
-                      onClick={handleMarksClick}
-                      onChange={(event) => updateMark(index, 5, event.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={selectedSubject ? student[6] : ""}
-                      placeholder={selectedSubject ? "" : "Select your Subject"}
-                      min="0"
-                      max="100"
-                      onClick={handleMarksClick}
-                      onChange={(event) => updateMark(index, 6, event.target.value)}
-                    />
-                  </td>
-                </tr>
+                {loading ? (
+                  <tr><td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>Loading students...</td></tr>
+                ) : students.length === 0 ? (
+                  <tr><td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>No students found for this subject.</td></tr>
+                ) : students.map((student) => (
+                  <tr key={student.student_id}>
+                    <td>{student.college_id}</td>
+                    <td>{student.name}</td>
+                    <td>2024-2028</td>
+                    <td>{student.department}</td>
+                    <td>{student.semester}</td>
+                    <td>
+                      <input
+                        type="number"
+                        value={selectedSubject && marks[student.student_id] ? marks[student.student_id].lab : ""}
+                        placeholder={selectedSubject ? "" : "Select your Subject"}
+                        min="0"
+                        max="50"
+                        onClick={handleMarksClick}
+                        onChange={(event) => updateMark(student.student_id, 'lab', event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={selectedSubject && marks[student.student_id] ? marks[student.student_id].theory : ""}
+                        placeholder={selectedSubject ? "" : "Select your Subject"}
+                        min="0"
+                        max="100"
+                        onClick={handleMarksClick}
+                        onChange={(event) => updateMark(student.student_id, 'theory', event.target.value)}
+                      />
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -261,9 +334,9 @@ export default function UploadMarks({ onNavigate }) {
                   Reset
                 </button>
 
-                <button className="save-btn">
+                <button className="save-btn" onClick={handleSave} disabled={saving}>
                   <Save size={18} />
-                  Save Marks
+                  {saving ? 'Saving...' : 'Save Marks'}
                 </button>
               </div>
             </div>

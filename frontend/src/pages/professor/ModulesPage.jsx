@@ -10,10 +10,7 @@ function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <h1>NAME</h1>
 
-      <div className="search-box">
-        <input placeholder="Search" />
-        <Search size={20} />
-      </div>
+
 
       <button onClick={() => onNavigate("academic-records")} className="side-item">
         <BookOpen size={23} />
@@ -37,7 +34,7 @@ function Sidebar({ onNavigate }) {
           <button onClick={() => onNavigate("assigned-courses")} className="active-sub-side">
             Assigned Courses
           </button>
-          <button onClick={() => onNavigate("modules")}>Modules</button>
+
           <button onClick={() => onNavigate("resources")}>Resources</button>
           <button onClick={() => onNavigate("quizzes")}>Quizzes</button>
         </div>

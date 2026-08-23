@@ -224,11 +224,10 @@ export default function Certificates({ currentPage, setPage }) {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`pb-3 transition-all relative ${
-                      activeTab === tab
-                        ? 'text-violet-600 font-extrabold'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
+                    className={`pb-3 transition-all relative ${activeTab === tab
+                      ? 'text-violet-600 font-extrabold'
+                      : 'text-slate-400 hover:text-slate-600'
+                      }`}
                   >
                     {tab}
                     {activeTab === tab && (

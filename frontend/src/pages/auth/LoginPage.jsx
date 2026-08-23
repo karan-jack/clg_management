@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e?.preventDefault();
@@ -14,6 +15,14 @@ export default function LoginPage() {
       alert("Please enter email and password");
       return;
     }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
@@ -38,6 +47,8 @@ export default function LoginPage() {
     } catch (error) {
       console.error("Login error:", error);
       alert("Network error, unable to reach the server");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -311,24 +322,25 @@ export default function LoginPage() {
 
         <button
           onClick={handleLogin}
+          disabled={loading}
           style={{
             width: "100%",
             height: "56px",
-            background: "#1a4fd6",
+            background: loading ? "#a3b8eb" : "#1a4fd6",
             color: "#fff",
             border: "none",
             borderRadius: "12px",
             fontSize: "1.1rem",
             fontWeight: "600",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
             fontFamily: "'Segoe UI', sans-serif",
             letterSpacing: "0.02em",
             transition: "background 0.2s",
           }}
-          onMouseEnter={(e) => (e.target.style.background = "#1540b8")}
-          onMouseLeave={(e) => (e.target.style.background = "#1a4fd6")}
+          onMouseEnter={(e) => !loading && (e.target.style.background = "#1540b8")}
+          onMouseLeave={(e) => !loading && (e.target.style.background = "#1a4fd6")}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
       </div>
     </div>

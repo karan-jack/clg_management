@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ProfessorDashboard.css';
-import { Search, Bell, ChevronDown, ChevronUp, ChevronRight, MoveVertical as MoreVertical, BookOpen, Upload, GraduationCap, Bot, Users, ClipboardList, BookOpenCheck, Wand as Wand2, LogOut, Settings, Circle as HelpCircle, User, Folder, CalendarDays, FileQuestionMark as FileQuestion, FileText } from 'lucide-react';
+import { Search, Bell, ChevronDown, ChevronUp, ChevronRight, MoveVertical as MoreVertical, BookOpen, Upload, GraduationCap, Bot, Users, ClipboardList, BookOpenCheck, Wand as Wand2, LogOut, Settings, Circle as HelpCircle, User, Folder, CalendarDays, FileQuestionMark as FileQuestion, FileText, Loader2 } from 'lucide-react';
+import api from '../../services/api';
 
 function BatchCard({ batch, percent, color, ring }) {
   return (
@@ -66,15 +67,37 @@ export default function ProfessorDashboard({ onNavigate }) {
   const [learningOpen, setLearningOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
 
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getProfessorDashboard();
+      setData(res.data);
+    } catch (err) {
+      if (err.status === 401) window.location.href = '/login';
+      setError(err.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    window.location.href = '/login';
+  };
+
   return (
     <div className="dashboard-page">
       <aside className="sidebar">
         <h1>NAME</h1>
-
-        <div className="search-box">
-          <input placeholder="Search" />
-          <Search size={20} />
-        </div>
 
         <button
           onClick={() => onNavigate('academic-records')}
@@ -107,7 +130,7 @@ export default function ProfessorDashboard({ onNavigate }) {
             <button onClick={() => onNavigate('assigned-courses')}>
               Assigned Courses
             </button>
-            <button onClick={() => onNavigate('modules')}>Modules</button>
+
             <button onClick={() => onNavigate('resources')}>Resources</button>
             <button onClick={() => onNavigate('quizzes')}>Quizzes</button>
           </div>
@@ -184,7 +207,7 @@ export default function ProfessorDashboard({ onNavigate }) {
                   <HelpCircle size={18} /> Help & Support
                 </button>
                 <hr />
-                <button>
+                <button onClick={handleLogout}>
                   <LogOut size={18} /> Sign out
                 </button>
               </div>
@@ -197,102 +220,86 @@ export default function ProfessorDashboard({ onNavigate }) {
             Assigned Batches <ChevronRight size={24} />
           </h3>
 
-          <div className="batch-grid">
-          <BatchCard
-           batch="2025-2029"
-           percent={30} 
-           color="#ded4f2" 
-           ring="#b49adf" 
-          />
-          <BatchCard 
-          batch="2024-2028" 
-          percent={50} 
-          color="#d3d8ee" 
-          ring="#7e91d4" 
-          />
-          <BatchCard 
-          batch="2025-2029" 
-          percent={30} 
-          color="#c8ebe8" 
-          ring="#72c9c3" 
-          />
-          </div>
+          {loading ? (
+            <div style={{ display:"flex", justifyContent:"center", padding: 40 }}>
+              <Loader2 size={32} className="animate-spin" color="#8b35d8" />
+            </div>
+          ) : error ? (
+            <div style={{ color: 'red', padding: 20 }}>{error}</div>
+          ) : (
+            <>
+              <div className="batch-grid">
+                {(data?.assignedBatches || [
+                  { batch: "2025-2029", percent: 30, color: "#ded4f2", ring: "#b49adf" },
+                  { batch: "2024-2028", percent: 50, color: "#d3d8ee", ring: "#7e91d4" },
+                  { batch: "2025-2029", percent: 30, color: "#c8ebe8", ring: "#72c9c3" }
+                ]).map((b, i) => (
+                  <BatchCard
+                    key={i}
+                    batch={b.batch || `Batch ${i+1}`}
+                    percent={b.percent || 0} 
+                    color={b.color || "#ded4f2"} 
+                    ring={b.ring || "#b49adf"} 
+                  />
+                ))}
+              </div>
 
-          <h3 className="section-heading">Overview</h3>
+              <h3 className="section-heading">Overview</h3>
 
-          <div className="overview-grid">
-            <OverviewCard
-              icon={<Users />}
-              title="Total Students"
-              value="1,248"
-              color="#0957c4"
-            />
-            <OverviewCard
-              icon={<BookOpenCheck />}
-              title="Active Courses"
-              value="42"
-              color="#8b35d8"
-            />
-            <OverviewCard
-              icon={<ClipboardList />}
-              title="Quizzes Created"
-              value="156"
-              color="#0867bb"
-            />
-            <OverviewCard
-              icon={<Wand2 />}
-              title="AI Tools Used"
-              value="89"
-              color="#4aa7df"
-            />
-          </div>
+              <div className="overview-grid">
+                <OverviewCard
+                  icon={<Users />}
+                  title="Total Students"
+                  value={data?.stats?.totalStudents || 0}
+                  color="#0957c4"
+                />
+                <OverviewCard
+                  icon={<BookOpenCheck />}
+                  title="Active Courses"
+                  value={data?.stats?.activeCourses || 0}
+                  color="#8b35d8"
+                />
+                <OverviewCard
+                  icon={<ClipboardList />}
+                  title="Quizzes Created"
+                  value={data?.stats?.quizzesCreated || 0}
+                  color="#0867bb"
+                />
+                <OverviewCard
+                  icon={<Wand2 />}
+                  title="Assignments"
+                  value={data?.stats?.assignmentsCreated || 0}
+                  color="#4aa7df"
+                />
+              </div>
 
-          <h3 className="section-heading">
-            Recent Activity <ChevronRight size={24} />
-          </h3>
+              <h3 className="section-heading">
+                Recent Activity <ChevronRight size={24} />
+              </h3>
 
-          <div className="activity-list">
-            <ActivityRow
-              icon={<ClipboardList />}
-              color="#8a35d8"
-              title="Quiz on Machine Learning"
-              subtitle="Created by you"
-              status="Quiz Created"
-              time="2 hours ago"
-            />
-            <ActivityRow
-              icon={<CalendarDays />}
-              color="#fb5a00"
-              title="Assignment: Neural Networks"
-              subtitle="Due on 25 May 2025"
-              status="Due Soon"
-              time="3 hours ago"
-            />
-            <ActivityRow
-              icon={<FileQuestion />}
-              color="#3b9ce0"
-              title="Quiz on Operating Systems"
-              subtitle="Attempted by 45 students"
-              status="Quiz Viewed"
-              time="5 hours ago"
-            />
-            <ActivityRow
-              icon={<FileText />}
-              color="#f2b000"
-              title="Data Structures Assignment"
-              subtitle="23 Submissions Pending"
-              status="Pending"
-              time="1 day ago"
-            />
-            <ActivityRow
-              icon={<Folder />}
-              color="#e32d36"
-              title="Advanced Algorithms"
-              subtitle="3 resources needed"
-              status="Resources"
-              time="1 day ago"
-            />
-          </div>
+              <div className="activity-list">
+                {data?.recentActivity && data.recentActivity.length > 0 ? (
+                  data.recentActivity.map((a, i) => (
+                    <ActivityRow
+                      key={i}
+                      icon={a.type === 'Quiz' ? <ClipboardList /> : a.type === 'Assignment' ? <FileText /> : <BookOpen />}
+                      color={a.type === 'Quiz' ? "#8a35d8" : "#fb5a00"}
+                      title={a.title || 'Activity'}
+                      subtitle={a.subtitle || 'Updated'}
+                      status={a.status || 'Done'}
+                      time={new Date(a.date || Date.now()).toLocaleDateString()}
+                    />
+                  ))
+                ) : (
+                  <p style={{ padding: '0 20px', color: '#6B7280' }}>No recent activity.</p>
+                )}
+              </div>
+            </>
+          )}
+
+
+
+
         </section>
       </main>
     </div>

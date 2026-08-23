@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ProfessorDashboard.css';
 import { Search, Bell, ChevronDown, ChevronUp, BookOpen, Upload, GraduationCap, Bot, Settings, Circle as HelpCircle, User, LogOut, MoveVertical as MoreVertical, ArrowRight, Code as Code2, BrainCircuit, Database, Monitor, Info } from 'lucide-react';
+import api from "../../services/api";
+import { Loader2 } from "lucide-react";
 
 function Sidebar({ onNavigate }) {
   const [learningOpen, setLearningOpen] = useState(true);
@@ -10,10 +12,7 @@ function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <h1>NAME</h1>
 
-      <div className="search-box">
-        <input placeholder="Search" />
-        <Search size={20} />
-      </div>
+
 
       <button
         onClick={() => onNavigate('academic-records')}
@@ -186,6 +185,35 @@ function CourseCard({
 }
 
 export default function AssignedCourses({ onNavigate }) {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getProfessorCourses();
+      setCourses(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getIconAndColors = (index) => {
+    const configs = [
+      { icon: <Code2 />, color: "#7b35d4", bg: "#f0e7fb" },
+      { icon: <BrainCircuit />, color: "#1267c5", bg: "#eaf4fb" },
+      { icon: <Database />, color: "#27965b", bg: "#edf5ea" },
+      { icon: <Monitor />, color: "#f15a16", bg: "#fff0e8" },
+    ];
+    return configs[index % configs.length];
+  };
+
   return (
     <div className="dashboard-page">
       <Sidebar onNavigate={onNavigate} />
@@ -197,53 +225,31 @@ export default function AssignedCourses({ onNavigate }) {
           <h3 className="section-heading">Your Assigned Courses</h3>
 
           <div className="course-grid">
-            <CourseCard
-              icon={<Code2 />}
-              title="Data Structures"
-              batch="2024-2028"
-              semester="3"
-              modules="8"
-              students="120"
-              color="#7b35d4"
-              bg="#f0e7fb"
-              onNavigate={onNavigate}
-            />
-
-            <CourseCard
-              icon={<BrainCircuit />}
-              title="Algorithms"
-              batch="2024-2028"
-              semester="4"
-              modules="7"
-              students="115"
-              color="#1267c5"
-              bg="#eaf4fb"
-              onNavigate={onNavigate}
-            />
-
-            <CourseCard
-              icon={<Database />}
-              title="Database Systems"
-              batch="2024-2028"
-              semester="5"
-              modules="6"
-              students="110"
-              color="#27965b"
-              bg="#edf5ea"
-              onNavigate={onNavigate}
-            />
-
-            <CourseCard
-              icon={<Monitor />}
-              title="Operating Systems"
-              batch="2023-2027"
-              semester="6"
-              modules="7"
-              students="105"
-              color="#f15a16"
-              bg="#fff0e8"
-              onNavigate={onNavigate}
-            />
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', gridColumn: '1 / -1', padding: '40px' }}>
+                <Loader2 className="animate-spin text-[#7b35d4]" size={32} />
+              </div>
+            ) : courses.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+                No assigned courses found.
+              </div>
+            ) : courses.map((course, idx) => {
+              const { icon, color, bg } = getIconAndColors(idx);
+              return (
+                <CourseCard
+                  key={course.id}
+                  icon={icon}
+                  title={course.title}
+                  batch={course.department || "General"}
+                  semester={course.semester || "1"}
+                  modules={course.modules_count || 0}
+                  students={course.student_count || 0}
+                  color={color}
+                  bg={bg}
+                  onNavigate={onNavigate}
+                />
+              );
+            })}
           </div>
 
           <div className="manage-box">

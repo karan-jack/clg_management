@@ -1,80 +1,76 @@
-const adminService = require('../services/admin');
+const adminService = require('../services/adminService');
 
-const getAllUsers = async (req, res) => {
+const handleControllerError = (res, error, defaultMessage = 'Internal server error') => {
+  console.error(error);
+  const status = error.status || 500;
+  return res.status(status).json({
+    success: false,
+    message: error.message || defaultMessage
+  });
+};
+
+const getDashboard = async (req, res) => {
   try {
-    const users = await adminService.getAllUsers();
-    res.status(200).json({ success: true, users });
+    const data = await adminService.getDashboard();
+    return res.status(200).json({ success: true, data });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching users', error: error.message });
+    return handleControllerError(res, error, 'Failed to fetch dashboard');
   }
 };
 
-const getUserById = async (req, res) => {
+const getAnalytics = async (req, res) => {
   try {
-    const user = await adminService.getUserById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    res.status(200).json({ success: true, user });
+    const data = await adminService.getAnalytics();
+    return res.status(200).json({ success: true, data });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching user', error: error.message });
+    return handleControllerError(res, error, 'Failed to fetch analytics');
   }
 };
 
-const updateUser = async (req, res) => {
-  try {
-    const updatedUser = await adminService.updateUser(req.params.id, req.body);
-    if (!updatedUser) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    res.status(200).json({ success: true, user: updatedUser });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error updating user', error: error.message });
-  }
-};
-
-const deleteUser = async (req, res) => {
-  try {
-    await adminService.deleteUser(req.params.id);
-    res.status(200).json({ success: true, message: 'User deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error deleting user', error: error.message });
-  }
-};
-
-const getAllStudents = async (req, res) => {
-  try {
-    const students = await adminService.getAllStudents();
-    res.status(200).json({ success: true, students });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching students', error: error.message });
-  }
-};
-
-const getAllProfessors = async (req, res) => {
-  try {
-    const professors = await adminService.getAllProfessors();
-    res.status(200).json({ success: true, professors });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching professors', error: error.message });
-  }
-};
-
-const getAdminUsers = async (req, res) => {
-  try {
-    const admins = await adminService.getAdminUsers();
-    res.status(200).json({ success: true, admins });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching admin users', error: error.message });
-  }
+const generateCrudControllers = (serviceGroup) => {
+    return {
+        getAll: async (req, res) => {
+            try {
+                const data = await adminService[`get${serviceGroup}s`](req.query);
+                return res.status(200).json({ success: true, ...data });
+            } catch (error) { return handleControllerError(res, error); }
+        },
+        getById: async (req, res) => {
+            try {
+                const data = await adminService[`get${serviceGroup}ById`](req.params.id);
+                if (!data) return res.status(404).json({ success: false, message: 'Not found' });
+                return res.status(200).json({ success: true, data });
+            } catch (error) { return handleControllerError(res, error); }
+        },
+        create: async (req, res) => {
+            try {
+                const data = await adminService[`create${serviceGroup}`](req.body);
+                return res.status(201).json({ success: true, data });
+            } catch (error) { return handleControllerError(res, error); }
+        },
+        update: async (req, res) => {
+            try {
+                const data = await adminService[`update${serviceGroup}`](req.params.id, req.body);
+                return res.status(200).json({ success: true, data });
+            } catch (error) { return handleControllerError(res, error); }
+        },
+        delete: async (req, res) => {
+            try {
+                await adminService[`delete${serviceGroup}`](req.params.id);
+                return res.status(200).json({ success: true, message: 'Deleted successfully' });
+            } catch (error) { return handleControllerError(res, error); }
+        }
+    };
 };
 
 module.exports = {
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
-  getAllStudents,
-  getAllProfessors,
-  getAdminUsers
+  getDashboard,
+  getAnalytics,
+  studentController: generateCrudControllers('Student'),
+  professorController: generateCrudControllers('Professor'),
+  adminController: generateCrudControllers('Admin'),
+  courseController: generateCrudControllers('Course'),
+  subjectController: generateCrudControllers('Subject'),
+  batchController: generateCrudControllers('Batch'),
+  learningPathController: generateCrudControllers('LearningPath')
 };

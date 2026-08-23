@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Users, GraduationCap, BookOpen, Shuffle, Home, ChevronDown,
   ChevronRight, Search, Bell, Settings, Lock, LogOut, User,
-  BarChart2, UploadCloud
+  BarChart2, UploadCloud, Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
 /* ── Sparkline (pure SVG, no recharts) ── */
 function Spark({ data, color }) {
@@ -25,40 +26,13 @@ function Spark({ data, color }) {
   );
 }
 
-/* ── Data ── */
-const REG   = [900,950,870,1000,980,1100,1050,1200,1180,1350,1420,1542];
-const CRS   = [6,8,7,9,10,9,12,11,13,15,17,18];
-const LP    = [12,13,14,15,16,17,18,20,21,22,23,24];
-const COMP  = [60,58,62,61,65,63,67,68,70,71,72,72.6];
-
-const STATS = [
-  { label:"Total Students",       value:"1,248", pct:"12.5%", Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5" },
-  { label:"Total Professors",     value:"42",    pct:"5.3%",  Icon:GraduationCap, iconBg:"#F3E8FF", iconColor:"#7C3AED" },
-  { label:"Total Courses",        value:"156",   pct:"8.7%",  Icon:BookOpen,      iconBg:"#D1FAE5", iconColor:"#059669" },
-  { label:"Total Learning Paths", value:"28",    pct:"6.1%",  Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C" },
-];
-
+// Static icons and configurations for UI elements
 const QUICK = [
   { label:"Manage Students",       desc:"View, add and manage student records",   Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5", path:"/admin/students" },
   { label:"Student Master",        desc:"Manage student master data",              Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5", path:"/admin/student-master" },
   { label:"Manage Professors",     desc:"View, add and manage professor records", Icon:GraduationCap, iconBg:"#F3E8FF", iconColor:"#7C3AED", path:"/admin/professors" },
   { label:"Manage Courses",        desc:"Create and manage platform courses",     Icon:BookOpen,      iconBg:"#D1FAE5", iconColor:"#059669", path:"/admin/courses" },
   { label:"Learning Paths",        desc:"Create and organize learning paths",     Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C", path:"/admin/learning-paths" },
-];
-
-const ACTIVITY = [
-  { Icon:User,        iconBg:"#EEF2FF", iconColor:"#4F46E5", title:"Professor Added",         sub:"by Admin User", time:"2 hours ago", badge:"New",     bFg:"#4F46E5", bBg:"#EEF2FF" },
-  { Icon:BookOpen,    iconBg:"#D1FAE5", iconColor:"#059669", title:"Course Created",           sub:"by Admin User", time:"3 hours ago", badge:"Success", bFg:"#15803D", bBg:"#DCFCE7" },
-  { Icon:UploadCloud, iconBg:"#DBEAFE", iconColor:"#2563EB", title:"Student Master Uploaded",  sub:"by Admin User", time:"5 hours ago", badge:"New",     bFg:"#4F46E5", bBg:"#EEF2FF" },
-  { Icon:Shuffle,     iconBg:"#FFEDD5", iconColor:"#EA580C", title:"Learning Path Updated",   sub:"by Admin User", time:"1 day ago",   badge:"Updated", bFg:"#9A3412", bBg:"#FFEDD5" },
-  { Icon:Users,       iconBg:"#EEF2FF", iconColor:"#4F46E5", title:"New Student Admission",   sub:"by Admin User", time:"1 day ago",   badge:"New",     bFg:"#4F46E5", bBg:"#EEF2FF" },
-];
-
-const OVERVIEW = [
-  { label:"Users Registered",      value:"1,542", pct:"15.8%", color:"#4F46E5", data:REG  },
-  { label:"Courses Created",       value:"18",    pct:"12.0%", color:"#7C3AED", data:CRS  },
-  { label:"Active Learning Paths", value:"24",    pct:"9.1%",  color:"#059669", data:LP   },
-  { label:"Completion Rate",       value:"72.6%", pct:"6.4%",  color:"#EA580C", data:COMP },
 ];
 
 const NAV = [
@@ -75,6 +49,27 @@ export default function AdminDashboard() {
   const [active, setActive]   = useState("Dashboard");
   const [profOpen, setProf]   = useState(false);
   const [expanded, setExpanded] = useState(NAV.map(() => true));
+  
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getAdminDashboard();
+      setData(res.data);
+    } catch (err) {
+      if (err.status === 401) navigate('/login');
+      setError(err.message || "Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -236,30 +231,43 @@ export default function AdminDashboard() {
         <main style={{ padding:28, display:"flex", flexDirection:"column", gap:24 }}>
 
           {/* Stat cards */}
-          <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
-            {STATS.map(({ label, value, pct, Icon:Ic, iconBg, iconColor }) => (
-              <div key={label} style={{ flex:"1 1 180px", minWidth:0, background:"#fff",
-                borderRadius:14, padding:"20px 22px",
-                boxShadow:"0 1px 4px rgba(0,0,0,0.07)",
-                display:"flex", flexDirection:"column", gap:8 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ width:40, height:40, borderRadius:10, background:iconBg,
-                    display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <Ic size={20} color={iconColor}/>
+          {loading ? (
+            <div style={{ display:"flex", justifyContent:"center", padding: 40 }}>
+              <Loader2 size={32} className="animate-spin text-[#4F46E5]" />
+            </div>
+          ) : error ? (
+            <div style={{ color: 'red', padding: 20 }}>{error}</div>
+          ) : (
+            <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
+              {[
+                { label:"Total Students",       value: data?.totalStudents || 0, pct:"0.0%", Icon:Users,         iconBg:"#EEF2FF", iconColor:"#4F46E5" },
+                { label:"Total Professors",     value: data?.totalProfessors || 0,    pct:"0.0%",  Icon:GraduationCap, iconBg:"#F3E8FF", iconColor:"#7C3AED" },
+                { label:"Total Courses",        value: data?.totalCourses || 0,   pct:"0.0%",  Icon:BookOpen,      iconBg:"#D1FAE5", iconColor:"#059669" },
+                { label:"Total Learning Paths", value: data?.totalLearningPaths || 0,    pct:"0.0%",  Icon:Shuffle,       iconBg:"#FFEDD5", iconColor:"#EA580C" }
+              ].map(({ label, value, pct, Icon:Ic, iconBg, iconColor }) => (
+                <div key={label} style={{ flex:"1 1 180px", minWidth:0, background:"#fff",
+                  borderRadius:14, padding:"20px 22px",
+                  boxShadow:"0 1px 4px rgba(0,0,0,0.07)",
+                  display:"flex", flexDirection:"column", gap:8 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <div style={{ width:40, height:40, borderRadius:10, background:iconBg,
+                      display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Ic size={20} color={iconColor}/>
+                    </div>
+                    <span style={{ fontSize:13, color:"#6B7280", fontWeight:500, fontFamily:inter }}>
+                      {label}
+                    </span>
                   </div>
-                  <span style={{ fontSize:13, color:"#6B7280", fontWeight:500, fontFamily:inter }}>
-                    {label}
-                  </span>
+                  <div style={{ fontSize:28, fontWeight:800, fontFamily:inter,
+                    color:"#111827", lineHeight:1 }}>{value}</div>
+                  <div style={{ fontSize:12, display:"flex", alignItems:"center", gap:4 }}>
+                    <span style={{ color:"#16A34A", fontWeight:600, fontFamily:inter }}>↑ {pct}</span>
+                    <span style={{ color:"#9CA3AF", fontFamily:inter }}>from last month</span>
+                  </div>
                 </div>
-                <div style={{ fontSize:28, fontWeight:800, fontFamily:inter,
-                  color:"#111827", lineHeight:1 }}>{value}</div>
-                <div style={{ fontSize:12, display:"flex", alignItems:"center", gap:4 }}>
-                  <span style={{ color:"#16A34A", fontWeight:600, fontFamily:inter }}>↑ {pct}</span>
-                  <span style={{ color:"#9CA3AF", fontFamily:inter }}>from last month</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Quick Management */}
           <section>
@@ -306,23 +314,24 @@ export default function AdminDashboard() {
                   cursor:"pointer", fontFamily:inter }}>View All</span>
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-                {ACTIVITY.map((a, i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
-                    <div style={{ width:36, height:36, borderRadius:9, background:a.iconBg,
-                      display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <a.Icon size={17} color={a.iconColor}/>
+                {data && data.recentActivities && data.recentActivities.length > 0 ? (
+                  data.recentActivities.map((a, i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <div style={{ width:36, height:36, borderRadius:9, background:"#EEF2FF",
+                        display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <User size={17} color="#4F46E5"/>
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontWeight:600, color:"#111827", fontSize:13, fontFamily:inter }}>{a.title || 'System Activity'}</div>
+                        <div style={{ color:"#9CA3AF", fontSize:12, fontFamily:inter }}>{a.subtitle || a.type}</div>
+                      </div>
+                      <span style={{ color:"#9CA3AF", fontSize:12,
+                        whiteSpace:"nowrap", fontFamily:inter }}>{new Date(a.created_at).toLocaleDateString()}</span>
                     </div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontWeight:600, color:"#111827", fontSize:13, fontFamily:inter }}>{a.title}</div>
-                      <div style={{ color:"#9CA3AF", fontSize:12, fontFamily:inter }}>{a.sub}</div>
-                    </div>
-                    <span style={{ color:"#9CA3AF", fontSize:12,
-                      whiteSpace:"nowrap", fontFamily:inter }}>{a.time}</span>
-                    <span style={{ padding:"3px 10px", borderRadius:20, fontSize:11,
-                      fontWeight:600, whiteSpace:"nowrap", fontFamily:inter,
-                      color:a.bFg, background:a.bBg }}>{a.badge}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div style={{ color:"#9CA3AF", fontSize:13 }}>No recent activities found.</div>
+                )}
               </div>
             </div>
 
@@ -342,7 +351,12 @@ export default function AdminDashboard() {
                 </select>
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-                {OVERVIEW.map((m) => (
+                {[
+                  { label:"Users Registered",      value: data?.totalStudents || 0, pct:"0.0%", color:"#4F46E5", data: [900,950,870,1000,980,1100,1050,1200,1180,1350,1420,1542]  },
+                  { label:"Courses Created",       value: data?.totalCourses || 0,    pct:"0.0%", color:"#7C3AED", data: [6,8,7,9,10,9,12,11,13,15,17,18]  },
+                  { label:"Active Learning Paths", value: data?.totalLearningPaths || 0,    pct:"0.0%",  color:"#059669", data: [12,13,14,15,16,17,18,20,21,22,23,24]   },
+                  { label:"Completion Rate",       value: "0.0%", pct:"0.0%",  color:"#EA580C", data: [60,58,62,61,65,63,67,68,70,71,72,72.6] },
+                ].map((m) => (
                   <div key={m.label} style={{ background:"#F9FAFB", borderRadius:10, padding:"12px 14px" }}>
                     <div style={{ fontSize:12, color:"#6B7280", fontWeight:500, fontFamily:inter }}>{m.label}</div>
                     <div style={{ fontSize:22, fontWeight:800, fontFamily:inter,

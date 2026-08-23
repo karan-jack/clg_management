@@ -37,10 +37,7 @@ function Sidebar({ onNavigate, activeTool }) {
     <aside className="sidebar">
       <h1>NAME</h1>
 
-      <div className="search-box">
-        <input placeholder="Search" />
-        <Search size={20} />
-      </div>
+
 
       <button
         onClick={() => onNavigate('academic-records')}

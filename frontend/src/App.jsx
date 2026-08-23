@@ -1,37 +1,66 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
-// Landing Page
+// Landing Page & Auth
 import LandingPage from './pages/landing/LandingPage';
-
-// Auth Pages
 import LoginPage from './pages/auth/LoginPage';
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import StudentsManagement from './pages/admin/user management/StudentsManagement';
-import ProfessorsManagement from './pages/admin/user management/ProfessorsManagement';
-import AdminsManagement from './pages/admin/user management/AdminsManagement (2)';
+// Admin Pages (Lazy loaded)
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const StudentsManagement = lazy(() => import('./pages/admin/user management/StudentsManagement'));
+const ProfessorsManagement = lazy(() => import('./pages/admin/user management/ProfessorsManagement'));
+const AdminsManagement = lazy(() => import('./pages/admin/user management/AdminsManagement (2)'));
 
-// Student Pages
-import StudentDashboard from './pages/student/Dashboard';
-import StudentAcademicRecords from './pages/student/academics/AcademicRecords';
-import BrowseCourses from './pages/student/courses/BrowseCourses';
-import LearningPaths from './pages/student/courses/LearningPaths';
-import MyLearning from './pages/student/LearningPaths/MyLearning';
-import Leaderboard from './pages/student/Gamification/Leaderboard';
-import Badges from './pages/student/Gamification/Badges';
-import Certificates from './pages/student/portfolio/Certificates';
-import Publications from './pages/student/portfolio/Publications';
-import ResumeGenerator from './pages/student/tools/ResumeGenerator';
+// Student Pages (Lazy loaded)
+const StudentDashboard = lazy(() => import('./pages/student/Dashboard'));
+const StudentAcademicRecords = lazy(() => import('./pages/student/academics/AcademicRecords'));
+const BrowseCourses = lazy(() => import('./pages/student/courses/BrowseCourses'));
+const LearningPaths = lazy(() => import('./pages/student/courses/LearningPaths'));
+const MyLearning = lazy(() => import('./pages/student/LearningPaths/MyLearning'));
+const Leaderboard = lazy(() => import('./pages/student/Gamification/Leaderboard'));
+const Badges = lazy(() => import('./pages/student/Gamification/Badges'));
+const Certificates = lazy(() => import('./pages/student/portfolio/Certificates'));
+const Publications = lazy(() => import('./pages/student/portfolio/Publications'));
+const ResumeGenerator = lazy(() => import('./pages/student/tools/ResumeGenerator'));
 
-// Professor Pages
-import ProfessorDashboard from './pages/professor/ProfessorDashboard';
-import ProfessorAcademicRecords from './pages/professor/AcademicRecords';
-import UploadMarks from './pages/professor/UploadMarks';
-import AssignedCourses from './pages/professor/AssignedCourses';
-import ResourcesPage from './pages/professor/ResourcesPage';
-import ModulesPage from './pages/professor/ModulesPage';
+// Professor Pages (Lazy loaded)
+const ProfessorDashboard = lazy(() => import('./pages/professor/ProfessorDashboard'));
+const ProfessorAcademicRecords = lazy(() => import('./pages/professor/AcademicRecords'));
+const UploadMarks = lazy(() => import('./pages/professor/UploadMarks'));
+const AssignedCourses = lazy(() => import('./pages/professor/AssignedCourses'));
+const ResourcesPage = lazy(() => import('./pages/professor/ResourcesPage'));
+const ModulesPage = lazy(() => import('./pages/professor/ModulesPage'));
+const QuizzesPage = lazy(() => import('./pages/professor/QuizzesPage'));
+const QuizSubjectSelect = lazy(() => import('./pages/professor/QuizSubjectSelect'));
+const QuizGenerator = lazy(() => import('./pages/professor/QuizGenerator'));
+const AssignmentGenerator = lazy(() => import('./pages/professor/AssignmentGenerator'));
+
+// Protected Route Wrapper
+function ProtectedRoute({ children, allowedRole }) {
+  const token = localStorage.getItem('token');
+  const role = parseInt(localStorage.getItem('role'), 10);
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Role 1 = admin, 2 = professor, 3 = student
+  const roleMap = {
+    'admin': 1,
+    'professor': 2,
+    'student': 3
+  };
+
+  if (role !== roleMap[allowedRole]) {
+    // Redirect to their respective dashboard if they try to access wrong route
+    if (role === 1) return <Navigate to="/admin" replace />;
+    if (role === 2) return <Navigate to="/professor" replace />;
+    if (role === 3) return <Navigate to="/student" replace />;
+    return <Navigate to="/login" replace />; // Fallback if invalid role
+  }
+
+  return children;
+}
 
 // Helper component to adapt the legacy `setPage` routing to react-router
 function PageAdapter({ component: Component, role, pageName }) {
@@ -59,49 +88,63 @@ function AdminPlaceholderPage({ title, description }) {
   );
 }
 
+const LoadingFallback = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8fafc' }}>
+    <div style={{ color: '#0b1a30', fontSize: '1.2rem', fontWeight: 600 }}>Loading...</div>
+  </div>
+);
+
 export default function App() {
   return (
     <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* Student Routes */}
-        <Route path="/student" element={<PageAdapter component={StudentDashboard} role="student" pageName="dashboard" />} />
-        <Route path="/student/academic-records" element={<PageAdapter component={StudentAcademicRecords} role="student" pageName="academic-records" />} />
-        <Route path="/student/browse-courses" element={<PageAdapter component={BrowseCourses} role="student" pageName="browse-courses" />} />
-        <Route path="/student/learning-paths" element={<PageAdapter component={LearningPaths} role="student" pageName="learning-paths" />} />
-        <Route path="/student/my-learning" element={<PageAdapter component={MyLearning} role="student" pageName="my-learning" />} />
-        <Route path="/student/leaderboard" element={<PageAdapter component={Leaderboard} role="student" pageName="leaderboard" />} />
-        <Route path="/student/badges" element={<PageAdapter component={Badges} role="student" pageName="badges" />} />
-        <Route path="/student/certificates" element={<PageAdapter component={Certificates} role="student" pageName="certificates" />} />
-        <Route path="/student/publications" element={<PageAdapter component={Publications} role="student" pageName="publications" />} />
-        <Route path="/student/resume-generator" element={<PageAdapter component={ResumeGenerator} role="student" pageName="resume-generator" />} />
-        {/* Professor Routes */}
-        <Route path="/professor" element={<PageAdapter component={ProfessorDashboard} role="professor" pageName="dashboard" />} />
-        <Route path="/professor/academic-records" element={<PageAdapter component={ProfessorAcademicRecords} role="professor" pageName="academic-records" />} />
-        <Route path="/professor/upload-marks" element={<PageAdapter component={UploadMarks} role="professor" pageName="upload-marks" />} />
-        <Route path="/professor/assigned-courses" element={<PageAdapter component={AssignedCourses} role="professor" pageName="assigned-courses" />} />
-        <Route path="/professor/resources" element={<PageAdapter component={ResourcesPage} role="professor" pageName="resources" />} />
-        <Route path="/professor/modules" element={<PageAdapter component={ModulesPage} role="professor" pageName="modules" />} />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Student Routes */}
+          <Route path="/student" element={<ProtectedRoute allowedRole="student"><PageAdapter component={StudentDashboard} role="student" pageName="dashboard" /></ProtectedRoute>} />
+          <Route path="/student/academic-records" element={<ProtectedRoute allowedRole="student"><PageAdapter component={StudentAcademicRecords} role="student" pageName="academic-records" /></ProtectedRoute>} />
+          <Route path="/student/browse-courses" element={<ProtectedRoute allowedRole="student"><PageAdapter component={BrowseCourses} role="student" pageName="browse-courses" /></ProtectedRoute>} />
+          <Route path="/student/learning-paths" element={<ProtectedRoute allowedRole="student"><PageAdapter component={LearningPaths} role="student" pageName="learning-paths" /></ProtectedRoute>} />
+          <Route path="/student/my-learning" element={<ProtectedRoute allowedRole="student"><PageAdapter component={MyLearning} role="student" pageName="my-learning" /></ProtectedRoute>} />
+          <Route path="/student/leaderboard" element={<ProtectedRoute allowedRole="student"><PageAdapter component={Leaderboard} role="student" pageName="leaderboard" /></ProtectedRoute>} />
+          <Route path="/student/badges" element={<ProtectedRoute allowedRole="student"><PageAdapter component={Badges} role="student" pageName="badges" /></ProtectedRoute>} />
+          <Route path="/student/certificates" element={<ProtectedRoute allowedRole="student"><PageAdapter component={Certificates} role="student" pageName="certificates" /></ProtectedRoute>} />
+          <Route path="/student/publications" element={<ProtectedRoute allowedRole="student"><PageAdapter component={Publications} role="student" pageName="publications" /></ProtectedRoute>} />
+          <Route path="/student/resume-generator" element={<ProtectedRoute allowedRole="student"><PageAdapter component={ResumeGenerator} role="student" pageName="resume-generator" /></ProtectedRoute>} />
+          
+          {/* Professor Routes */}
+          <Route path="/professor" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={ProfessorDashboard} role="professor" pageName="dashboard" /></ProtectedRoute>} />
+          <Route path="/professor/academic-records" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={ProfessorAcademicRecords} role="professor" pageName="academic-records" /></ProtectedRoute>} />
+          <Route path="/professor/upload-marks" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={UploadMarks} role="professor" pageName="upload-marks" /></ProtectedRoute>} />
+          <Route path="/professor/assigned-courses" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={AssignedCourses} role="professor" pageName="assigned-courses" /></ProtectedRoute>} />
+          <Route path="/professor/resources" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={ResourcesPage} role="professor" pageName="resources" /></ProtectedRoute>} />
+          <Route path="/professor/modules" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={ModulesPage} role="professor" pageName="modules" /></ProtectedRoute>} />
+          <Route path="/professor/quizzes" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={QuizzesPage} role="professor" pageName="quizzes" /></ProtectedRoute>} />
+          <Route path="/professor/quiz-subject-select" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={QuizSubjectSelect} role="professor" pageName="quiz-subject-select" /></ProtectedRoute>} />
+          <Route path="/professor/quiz-generator" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={QuizGenerator} role="professor" pageName="quiz-generator" /></ProtectedRoute>} />
+          <Route path="/professor/assignment-subject-select" element={<ProtectedRoute allowedRole="professor"><PageAdapter component={AssignmentGenerator} role="professor" pageName="assignment-subject-select" /></ProtectedRoute>} />
+          <Route path="/professor/summary-subject-select" element={<ProtectedRoute allowedRole="professor"><AdminPlaceholderPage title="Summary Generator" description="Summary generation is coming soon." /></ProtectedRoute>} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<PageAdapter component={AdminDashboard} role="admin" pageName="dashboard" />} />
-        <Route path="/admin/students" element={<StudentsManagement />} />
-        <Route path="/admin/professors" element={<ProfessorsManagement />} />
-        <Route path="/admin/admins" element={<AdminsManagement />} />
-        <Route path="/admin/student-master" element={<AdminPlaceholderPage title="Student Master" description="This section will show the student master management tools." />} />
-        <Route path="/admin/batches" element={<AdminPlaceholderPage title="Batches" description="This section will show batch management tools." />} />
-        <Route path="/admin/subjects" element={<AdminPlaceholderPage title="Subjects" description="This section will show subject management tools." />} />
-        <Route path="/admin/courses" element={<AdminPlaceholderPage title="Courses" description="This section will show the course management tools." />} />
-        <Route path="/admin/learning-paths" element={<AdminPlaceholderPage title="Learning Paths" description="This section will show learning path management tools." />} />
-        <Route path="/admin/analytics" element={<AdminPlaceholderPage title="Analytics" description="This section will show platform analytics reports." />} />
-        <Route path="/admin/profile" element={<AdminPlaceholderPage title="Profile" description="This section will show the admin profile and account settings." />} />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><PageAdapter component={AdminDashboard} role="admin" pageName="dashboard" /></ProtectedRoute>} />
+          <Route path="/admin/students" element={<ProtectedRoute allowedRole="admin"><StudentsManagement /></ProtectedRoute>} />
+          <Route path="/admin/professors" element={<ProtectedRoute allowedRole="admin"><ProfessorsManagement /></ProtectedRoute>} />
+          <Route path="/admin/admins" element={<ProtectedRoute allowedRole="admin"><AdminsManagement /></ProtectedRoute>} />
+          <Route path="/admin/student-master" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Student Master" description="This section will show the student master management tools." /></ProtectedRoute>} />
+          <Route path="/admin/batches" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Batches" description="This section will show batch management tools." /></ProtectedRoute>} />
+          <Route path="/admin/subjects" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Subjects" description="This section will show subject management tools." /></ProtectedRoute>} />
+          <Route path="/admin/courses" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Courses" description="This section will show the course management tools." /></ProtectedRoute>} />
+          <Route path="/admin/learning-paths" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Learning Paths" description="This section will show learning path management tools." /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Analytics" description="This section will show platform analytics reports." /></ProtectedRoute>} />
+          <Route path="/admin/profile" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Profile" description="This section will show the admin profile and account settings." /></ProtectedRoute>} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

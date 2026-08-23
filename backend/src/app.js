@@ -3,6 +3,9 @@ const cors = require('cors');
 require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const professorRoutes = require('./routes/professorRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
 
@@ -14,6 +17,8 @@ app.use(cors());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/professor', professorRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/student', studentRoutes);
 
 // Health route
 app.get('/', (req, res) => {
@@ -24,11 +29,13 @@ app.get('/', (req, res) => {
 });
 
 // Global 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+app.use((req, res, next) => {
+  const error = new Error('Route not found');
+  error.statusCode = 404;
+  next(error);
 });
+
+// Global Error Handler
+app.use(errorHandler);
 
 module.exports = app;

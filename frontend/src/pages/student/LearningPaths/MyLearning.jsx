@@ -1,213 +1,50 @@
 import React, { useState } from 'react';
 import { MainSidebar, Topbar } from '../Dashboard';
 
-// Courses list containing details needed for the CoursePage view
-const initialCoursesData = [
-  {
-    title: 'Data Structures',
-    category: 'Computer Science',
-    professor: 'Dr. Arindam Chatterjee',
-    department: 'Computer Science Department',
-    status: 'In Progress',
-    progress: 75,
-    completedModules: 6,
-    totalModules: 8,
-    modules: 8,
-    duration: '10-12 Hours',
-    level: 'Intermediate',
-    xp: 1200,
-    badge: 'Data Master',
-    icon: '</>',
-    color: 'from-violet-600 to-purple-500',
-    lessons: [
-      ['Introduction', ['Course overview', 'Why data structures matter']],
-      ['Module 1', ['Arrays and Strings', 'Searching techniques']],
-      ['Module 2', ['Linked Lists', 'Stacks and Queues']],
-      ['Module 3', ['Trees', 'Graphs', 'Hash Tables']],
-    ],
-  },
-  {
-    title: 'Database Systems',
-    category: 'Computer Science',
-    professor: 'Dr. Meera Nair',
-    department: 'Computer Science Department',
-    status: 'In Progress',
-    progress: 60,
-    completedModules: 4,
-    totalModules: 7,
-    modules: 7,
-    duration: '9-11 Hours',
-    level: 'Beginner',
-    xp: 1000,
-    badge: 'Query Expert',
-    icon: '▣',
-    color: 'from-sky-600 to-cyan-500',
-    lessons: [
-      ['Introduction', ['Database basics', 'Relational model']],
-      ['Module 1', ['Tables and keys', 'ER diagrams']],
-      ['Module 2', ['SQL queries', 'Joins and filters']],
-      ['Module 3', ['Normalization', 'Transactions']],
-    ],
-  },
-  {
-    title: 'Digital Logic Design',
-    category: 'Electrical Engineering',
-    professor: 'Prof. R. Menon',
-    department: 'Electrical Engineering Department',
-    status: 'In Progress',
-    progress: 40,
-    completedModules: 4,
-    totalModules: 10,
-    modules: 10,
-    duration: '8-10 Hours',
-    level: 'Intermediate',
-    xp: 950,
-    badge: 'Logic Builder',
-    icon: '▤',
-    color: 'from-emerald-500 to-green-600',
-    lessons: [
-      ['Introduction', ['Digital systems', 'Number systems']],
-      ['Module 1', ['Boolean algebra', 'Logic gates']],
-      ['Module 2', ['Combinational circuits', 'K-maps']],
-      ['Module 3', ['Flip-flops', 'Counters']],
-    ],
-  },
-  {
-    title: 'Calculus I',
-    category: 'Mathematics',
-    professor: 'Dr. Kavita Rao',
-    department: 'Mathematics Department',
-    status: 'Completed',
-    progress: 100,
-    completedModules: 10,
-    totalModules: 10,
-    modules: 10,
-    duration: '12-14 Hours',
-    level: 'Beginner',
-    xp: 1100,
-    badge: 'Calculus Starter',
-    icon: '∫',
-    color: 'from-amber-500 to-orange-400',
-    lessons: [
-      ['Introduction', ['Functions', 'Limits and continuity']],
-      ['Module 1', ['Derivatives', 'Rules of differentiation']],
-      ['Module 2', ['Applications of derivatives', 'Maxima and minima']],
-      ['Module 3', ['Integrals', 'Area under curves']],
-    ],
-  },
-  {
-    title: 'Physics for Engineering',
-    category: 'Physics',
-    professor: 'Dr. Nandita Sen',
-    department: 'Physics Department',
-    status: 'In Progress',
-    progress: 65,
-    completedModules: 6,
-    totalModules: 9,
-    modules: 9,
-    duration: '11-13 Hours',
-    level: 'Beginner',
-    xp: 1050,
-    badge: 'Physics Explorer',
-    icon: '⚛',
-    color: 'from-rose-400 to-pink-500',
-    lessons: [
-      ['Introduction', ['Measurements', 'Vectors']],
-      ['Module 1', ['Newtonian mechanics', 'Work and energy']],
-      ['Module 2', ['Electricity', 'Magnetism']],
-      ['Module 3', ['Waves', 'Optics']],
-    ],
-  },
-  {
-    title: 'Python Programming',
-    category: 'Computer Science',
-    professor: 'Ms. Priya Kapoor',
-    department: 'Computer Science Department',
-    status: 'Completed',
-    progress: 100,
-    completedModules: 8,
-    totalModules: 8,
-    modules: 8,
-    duration: '10-12 Hours',
-    level: 'Beginner',
-    xp: 1150,
-    badge: 'Python Coder',
-    icon: '⌘',
-    color: 'from-yellow-400 to-orange-400',
-    lessons: [
-      ['Introduction', ['Python setup', 'Syntax basics']],
-      ['Module 1', ['Variables', 'Conditionals', 'Loops']],
-      ['Module 2', ['Functions', 'Lists and dictionaries']],
-      ['Module 3', ['Files', 'Error handling']],
-    ],
-  },
-  {
-    title: 'Operating Systems',
-    category: 'Computer Science',
-    professor: 'Dr. Sameer Iqbal',
-    department: 'Computer Science Department',
-    status: 'In Progress',
-    progress: 50,
-    completedModules: 4,
-    totalModules: 8,
-    modules: 8,
-    duration: '9-12 Hours',
-    level: 'Intermediate',
-    xp: 1250,
-    badge: 'OS Analyst',
-    icon: '▥',
-    color: 'from-teal-500 to-cyan-600',
-    lessons: [
-      ['Introduction', ['OS overview', 'System calls']],
-      ['Module 1', ['Processes', 'Threads']],
-      ['Module 2', ['Scheduling', 'Synchronization']],
-      ['Module 3', ['Memory', 'File systems']],
-    ],
-  },
-  {
-    title: 'Artificial Intelligence',
-    category: 'Computer Science',
-    professor: 'Dr. Rohan Sethi',
-    department: 'Computer Science Department',
-    status: 'In Progress',
-    progress: 20,
-    completedModules: 2,
-    totalModules: 8,
-    modules: 8,
-    duration: '12-15 Hours',
-    level: 'Advanced',
-    xp: 1400,
-    badge: 'AI Thinker',
-    icon: '☼',
-    color: 'from-violet-600 to-indigo-500',
-    lessons: [
-      ['Introduction', ['What is AI?', 'Intelligent agents']],
-      ['Module 1', ['Search algorithms', 'Problem solving']],
-      ['Module 2', ['Knowledge representation', 'Reasoning']],
-      ['Module 3', ['Machine learning basics', 'AI ethics']],
-    ],
-  },
-];
+import { Loader2 } from "lucide-react";
+import api from "../../../services/api";
 
 export default function MyLearning({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
   const [filter, setFilter] = useState('All Courses');
   const [activeCourse, setActiveCourse] = useState(null);
 
-  // Compute dynamic counts
-  const totalCount = initialCoursesData.length;
-  const inProgressCount = initialCoursesData.filter(
-    (c) => c.status === 'In Progress'
-  ).length;
-  const completedCount = initialCoursesData.filter(
-    (c) => c.status === 'Completed'
-  ).length;
+  const [courses, setCourses] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-  // Filter courses dynamically based on selection
-  const filteredCourses = initialCoursesData.filter((course) => {
+  React.useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const res = await api.getStudentMyLearning();
+        setCourses(res.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const getCourseStyle = (index) => {
+    const styles = [
+      { icon: '</>', color: 'from-violet-600 to-purple-500' },
+      { icon: '▣', color: 'from-sky-600 to-cyan-500' },
+      { icon: '▤', color: 'from-emerald-500 to-green-600' },
+      { icon: '∫', color: 'from-amber-500 to-orange-400' },
+    ];
+    return styles[index % styles.length];
+  };
+
+  const totalCount = courses.length;
+  const inProgressCount = courses.filter((c) => c.status === 'In Progress').length;
+  const completedCount = courses.filter((c) => c.status === 'Completed').length;
+
+  const filteredCourses = courses.filter((course) => {
     if (filter === 'In Progress') return course.status === 'In Progress';
     if (filter === 'Completed') return course.status === 'Completed';
-    return true; // 'All Courses'
+    return true; 
   });
 
   // When a course is selected, render the exact same CoursePage view
@@ -238,11 +75,10 @@ export default function MyLearning({ currentPage, setPage }) {
           <div className="grid grid-cols-3 gap-6 mb-8">
             <div
               onClick={() => setFilter('All Courses')}
-              className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${
-                filter === 'All Courses'
+              className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${filter === 'All Courses'
                   ? 'border-[#06275b] bg-[#f0f4f9] shadow-sm'
                   : 'border-[#eadfd8] bg-white hover:border-slate-400'
-              }`}
+                }`}
             >
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Total Courses
@@ -254,11 +90,10 @@ export default function MyLearning({ currentPage, setPage }) {
 
             <div
               onClick={() => setFilter('In Progress')}
-              className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${
-                filter === 'In Progress'
+              className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${filter === 'In Progress'
                   ? 'border-[#06275b] bg-[#f0f4f9] shadow-sm'
                   : 'border-[#eadfd8] bg-white hover:border-slate-400'
-              }`}
+                }`}
             >
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 In Progress
@@ -270,11 +105,10 @@ export default function MyLearning({ currentPage, setPage }) {
 
             <div
               onClick={() => setFilter('Completed')}
-              className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${
-                filter === 'Completed'
+              className={`cursor-pointer rounded-xl border p-5 transition-all duration-200 ${filter === 'Completed'
                   ? 'border-[#06275b] bg-[#f0f4f9] shadow-sm'
                   : 'border-[#eadfd8] bg-white hover:border-slate-400'
-              }`}
+                }`}
             >
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Completed
@@ -313,75 +147,68 @@ export default function MyLearning({ currentPage, setPage }) {
           </div>
 
           {/* Filtered Courses List */}
-          <div className="grid grid-cols-2 gap-6">
-            {filteredCourses.map((course) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {loading ? (
+              <div className="col-span-full flex justify-center p-12">
+                <Loader2 className="animate-spin text-slate-400" size={32} />
+              </div>
+            ) : filteredCourses.length === 0 ? (
+              <div className="col-span-full flex justify-center p-12 text-slate-500">
+                No courses found.
+              </div>
+            ) : filteredCourses.map((course, idx) => {
+              const { icon, color } = getCourseStyle(idx);
+              const progressPct = course.progress || 0;
+              return (
               <div
-                key={course.title}
-                onClick={() => setActiveCourse(course)}
-                className="cursor-pointer rounded-xl border border-[#eadfd8] bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                key={idx}
+                className="group flex flex-col bg-white rounded-xl border border-[#eadfd8] overflow-hidden hover:shadow-lg transition-all duration-300"
               >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${course.color} text-xl font-bold text-white`}
-                  >
-                    {course.icon}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-[#0b1a30] truncate leading-snug">
-                        {course.title}
-                      </h3>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          course.status === 'Completed'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {course.status}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3 text-xs font-semibold text-slate-500">
-                      <span>Progress</span>
-                      <span className="text-[#0b1a30]">{course.progress}%</span>
-                    </div>
-
-                    <div className="h-1.5 w-full bg-[#f1eae2] rounded-full mt-2 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${course.color}`}
-                        style={{ width: `${course.progress}%` }}
-                      ></div>
-                    </div>
+                <div
+                  className={`h-24 w-full bg-gradient-to-r ${color} relative`}
+                >
+                  <div className="absolute -bottom-6 left-6 w-12 h-12 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100">
+                    {icon}
                   </div>
                 </div>
 
-                <div className="border-t border-[#f1eae2] mt-5 pt-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                    <span className="text-sm">📖</span>
-                    <span>
-                      {course.completedModules} of {course.totalModules} Modules
-                      Completed
+                <div className="p-6 pt-10 flex-1 flex flex-col">
+                  <div className="mb-4">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      {course.department || course.category}
                     </span>
+                    <h3 className="text-lg font-bold text-[#0b1a30] mt-1 leading-tight group-hover:text-blue-600 transition-colors">
+                      {course.title}
+                    </h3>
                   </div>
 
-                  {/* Arrow Button trigger */}
+                  <div className="space-y-3 mb-6 flex-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-slate-500">Progress</span>
+                      <span className="font-semibold text-[#0b1a30]">
+                        {progressPct}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-[#f0f4f9] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full bg-gradient-to-r ${color} rounded-full transition-all duration-500`}
+                        style={{ width: `${progressPct}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-slate-500 text-right">
+                      {course.completed_modules || course.completedModules} / {course.total_modules || course.totalModules} Modules
+                    </p>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveCourse(course);
-                    }}
-                    className="grid h-9 w-9 place-items-center rounded-lg border border-[#eadfd8] bg-white text-slate-500 transition hover:bg-[#fbf8f5] hover:text-[#0b1a30] cursor-pointer"
+                    onClick={() => setActiveCourse({...course, icon, color})}
+                    className="w-full py-2.5 rounded-lg border border-[#eadfd8] text-sm font-semibold text-slate-700 hover:bg-[#f0f4f9] hover:border-slate-300 transition-colors"
                   >
-                    <span className="text-base font-medium leading-none pb-0.5">
-                      ›
-                    </span>
+                    {course.status === 'Completed' ? 'Review Course' : 'Continue Learning'}
                   </button>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </section>
       </main>
@@ -468,7 +295,7 @@ function CourseLessonSidebar({ course, onBack }) {
       </h3>
 
       <nav className="mt-5 flex flex-col gap-4">
-        {course.lessons.map(([title, items], index) => (
+        {(course.lessons || []).map(([title, items], index) => (
           <LessonGroup
             key={title}
             title={title}

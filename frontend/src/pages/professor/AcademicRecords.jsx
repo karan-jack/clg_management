@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ProfessorDashboard.css';
 import { Search, Bell, ChevronDown, ChevronUp, BookOpen, Upload, GraduationCap, Bot, Users, ClipboardList, Clock, Download, MoveVertical as MoreVertical, Settings, Circle as HelpCircle, User, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -10,10 +10,7 @@ function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <h1>NAME</h1>
 
-      <div className="search-box">
-        <input placeholder="Search" />
-        <Search size={20} />
-      </div>
+
 
       <button
         onClick={() => onNavigate('academic-records')}
@@ -43,7 +40,7 @@ function Sidebar({ onNavigate }) {
           <button onClick={() => onNavigate('assigned-courses')}>
             Assigned Courses
           </button>
-          <button onClick={() => onNavigate('modules')}>Modules</button>
+
           <button onClick={() => onNavigate('resources')}>Resources</button>
           <button onClick={() => onNavigate('quizzes')}>Quizzes</button>
         </div>
@@ -145,20 +142,36 @@ function OverviewBox({ icon, title, value, color }) {
   );
 }
 
-const studentRecords = [
-  ["ENR2021001", "Aarav Sharma", "2024-2028", "Electronics", "Semester 3", "8.72"],
-  ["ENR2021002", "Diya Patel", "2024-2028", "Electronics", "Semester 3", "8.45"],
-  ["ENR2021003", "Rohan Verma", "2024-2028", "Electronics", "Semester 3", "7.98"],
-  ["ENR2021004", "Sneha Iyer", "2024-2028", "Electronics", "Semester 3", "9.12"],
-  ["ENR2021005", "Karan Mehta", "2024-2028", "Electronics", "Semester 3", "8.09"],
-  ["ENR2021006", "Ananya Singh", "2024-2028", "Electronics", "Semester 3", "8.66"],
-  ["ENR2021007", "Manav Gupta", "2024-2028", "Electronics", "Semester 3", "7.75"],
-  ["ENR2021008", "Pooja Nair", "2024-2028", "Electronics", "Semester 3", "9.28"],
-  ["ENR2021009", "Aditya Malhotra", "2024-2028", "Electronics", "Semester 3", "8.31"],
-  ["ENR2021010", "Ishita Roy", "2024-2028", "Electronics", "Semester 3", "8.94"],
-];
-
 export default function AcademicRecords({ onNavigate }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [batch, setBatch] = useState("All Batches");
+  const [department, setDepartment] = useState("All Departments");
+  const [semester, setSemester] = useState("All Semesters");
+  
+  useEffect(() => {
+    fetchRecords();
+  }, [batch, department, semester]);
+
+  const fetchRecords = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (batch !== "All Batches") params.append('batch', batch);
+      if (department !== "All Departments") params.append('department', department);
+      if (semester !== "All Semesters") params.append('semester', semester);
+      
+      const res = await window.api?.getProfessorAcademicRecords?.(`?${params.toString()}`) || await import('../../services/api').then(m => m.default.getProfessorAcademicRecords(`?${params.toString()}`));
+      setData(res.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="dashboard-page">
       <Sidebar onNavigate={onNavigate} />
@@ -170,61 +183,41 @@ export default function AcademicRecords({ onNavigate }) {
           <h3 className="section-heading">Overview</h3>
 
           <div className="overview-grid academic-overview">
-          <OverviewBox
-  icon={<BookOpen />}
-  title="Total Students"
-  value="1,248"
-  color="#0957c4"
-/>
-<OverviewBox
-  icon={<Users />}
-  title="Total Courses"
-  value="42"
-  color="#7d35cf"
-/>
-<OverviewBox
-  icon={<ClipboardList />}
-  title="Marks Submitted"
-  value="35,820"
-  color="#2f9b5c"
-/>
-<OverviewBox
-  icon={<Clock />}
-  title="Pending Submissions"
-  value="2,145"
-  color="#f26a12"
-/>
+            <OverviewBox icon={<BookOpen />} title="Total Students" value={data?.stats?.totalStudents || 0} color="#0957c4" />
+            <OverviewBox icon={<Users />} title="Total Courses" value={data?.stats?.totalCourses || 0} color="#7d35cf" />
+            <OverviewBox icon={<ClipboardList />} title="Marks Submitted" value={data?.stats?.marksSubmitted || 0} color="#2f9b5c" />
+            <OverviewBox icon={<Clock />} title="Pending Submissions" value={data?.stats?.pendingSubmissions || 0} color="#f26a12" />
           </div>
 
           <div className="filter-box">
-  <div className="filter-field">
-    <label>Select Batch</label>
-    <select>
-      <option>All Batches</option>
-      <option>2024-2028</option>
-      <option>2023-2027</option>
-    </select>
-  </div>
+            <div className="filter-field">
+              <label>Select Batch</label>
+              <select value={batch} onChange={e => setBatch(e.target.value)}>
+                <option>All Batches</option>
+                <option>2024-2028</option>
+                <option>2023-2027</option>
+              </select>
+            </div>
 
-  <div className="filter-field">
-    <label>Select Department</label>
-    <select>
-      <option>All Departments</option>
-      <option>Computer Science</option>
-      <option>Information Technology</option>
-      <option>Electronics</option>
-    </select>
-  </div>
+            <div className="filter-field">
+              <label>Select Department</label>
+              <select value={department} onChange={e => setDepartment(e.target.value)}>
+                <option>All Departments</option>
+                <option>Computer Science</option>
+                <option>Information Technology</option>
+                <option>Electronics</option>
+              </select>
+            </div>
 
-  <div className="filter-field">
-    <label>Select Semester</label>
-    <select>
-      <option>All Semesters</option>
-      <option>Semester 3</option>
-      <option>Semester 4</option>
-      <option>Semester 5</option>
-    </select>
-  </div>
+            <div className="filter-field">
+              <label>Select Semester</label>
+              <select value={semester} onChange={e => setSemester(e.target.value)}>
+                <option>All Semesters</option>
+                <option>Semester 3</option>
+                <option>Semester 4</option>
+                <option>Semester 5</option>
+              </select>
+            </div>
 
   <button className="export-btn">
     <Download size={17} />
@@ -248,16 +241,26 @@ export default function AcademicRecords({ onNavigate }) {
     </thead>
 
     <tbody>
-      {studentRecords.map((student) => (
-        <tr key={student[0]}>
-          <td>{student[0]}</td>
-          <td>{student[1]}</td>
-          <td>{student[2]}</td>
-          <td>{student[3]}</td>
-          <td>{student[4]}</td>
-          <td>{student[5]}</td>
+      {loading ? (
+        <tr>
+          <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>Loading...</td>
         </tr>
-      ))}
+      ) : data?.students && data.students.length > 0 ? (
+        data.students.map((row, index) => (
+          <tr key={index}>
+            <td>{row.enrollment_no || row.id}</td>
+            <td>{row.name || row.User?.name}</td>
+            <td>{row.batch || row.batch_year}</td>
+            <td>{row.department || row.dept}</td>
+            <td>{row.semester || row.current_semester}</td>
+            <td className="cgpa-col">{row.cgpa || '-'}</td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>No student records found.</td>
+        </tr>
+      )}
     </tbody>
   </table>
 
