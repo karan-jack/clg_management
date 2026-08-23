@@ -1,18 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
-
-const students = [
-  { id: "ENR2021001", name: "Aarav Sharma", dept: "Computer Science", semester: 5, status: "Active" },
-  { id: "ENR2021002", name: "Diya Patel", dept: "Electronics & Comm.", semester: 3, status: "Registered" },
-  { id: "ENR2021003", name: "Rohan Verma", dept: "Mechanical Engg.", semester: 7, status: "Active" },
-  { id: "ENR2021004", name: "Sneha Iyer", dept: "Computer Science", semester: 5, status: "Inactive" },
-  { id: "ENR2021005", name: "Karan Mehta", dept: "Civil Engineering", semester: 3, status: "Registered" },
-  { id: "ENR2021006", name: "Ananya Singh", dept: "Information Tech.", semester: 5, status: "Active" },
-  { id: "ENR2021007", name: "Manav Gupta", dept: "Electrical Engg.", semester: 1, status: "Not Registered" },
-  { id: "ENR2021008", name: "Pooja Nair", dept: "Electronics & Comm.", semester: 7, status: "Active" },
-  { id: "ENR2021009", name: "Aditya Malhotra", dept: "Mechanical Engg.", semester: 3, status: "Inactive" },
-  { id: "ENR2021010", name: "Ishita Roy", dept: "Computer Science", semester: 1, status: "Registered" },
-];
+import api from "../../../services/api";
+import { Loader2 } from "lucide-react";
 
 const statusStyles = {
   Active: { background: "#d1fae5", color: "#065f46" },
@@ -44,6 +33,39 @@ export default function StudentsManagement() {
   const [sidebarSearch, setSidebarSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [studentsList, setStudentsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [currentPage, rowsPerPage]);
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const res = await api.adminStudents.getAll(`?page=${currentPage}&limit=${rowsPerPage}`);
+      if (res.success) {
+        setStudentsList(res.rows || []);
+        setTotalCount(res.count || 0);
+      }
+    } catch (err) {
+      setError("Failed to load students.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredStudents = studentsList.filter(s => {
+    const deptMatch = department === "All Departments" || (s.Studentprofile && s.Studentprofile.department === department);
+    const semMatch = semester === "All Semesters" || (s.Studentprofile && s.Studentprofile.semester?.toString() === semester);
+    const batchMatch = batch === "All Batches" || (s.Studentprofile && s.Studentprofile.batch === batch);
+    const searchMatch = !searchQuery || 
+      (s.name && s.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
+      (s.Studentprofile && s.Studentprofile.enrollment_no && s.Studentprofile.enrollment_no.toLowerCase().includes(searchQuery.toLowerCase()));
+    return deptMatch && semMatch && batchMatch && searchMatch;
+  });
 
   const toggleSection = (section) =>
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -125,51 +147,59 @@ export default function StudentsManagement() {
               </tr>
             </thead>
             <tbody>
-              {students.map((s, i) => (
-                <tr key={s.id} style={{ borderBottom: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#fafbfc" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#f0f9ff"}
-                  onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#fafbfc"}
-                >
-                  <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#3b82f6", fontWeight: 600 }}>{s.id}</td>
-                  <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#1e293b", fontWeight: 500 }}>{s.name}</td>
-                  <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#475569" }}>{s.dept}</td>
-                  <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#475569" }}>{s.semester}</td>
-                  <td style={{ padding: "14px 20px" }}>
-                    <span style={{ padding: "4px 12px", borderRadius: 20, fontSize: 12.5, fontWeight: 600, ...statusStyles[s.status] }}>
-                      {s.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: "14px 20px", textAlign: "right" }}>
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                      <button title="View" style={{ background: "none", border: "none", cursor: "pointer", color: "#3b82f6", padding: 4, borderRadius: 6 }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#eff6ff"}
-                        onMouseLeave={e => e.currentTarget.style.background = "none"}
-                      >
-                        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-                        </svg>
-                      </button>
-                      <button title="Edit" style={{ background: "none", border: "none", cursor: "pointer", color: "#6366f1", padding: 4, borderRadius: 6 }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#eef2ff"}
-                        onMouseLeave={e => e.currentTarget.style.background = "none"}
-                      >
-                        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </svg>
-                      </button>
-                      <button title="Deactivate" style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", padding: 4, borderRadius: 6 }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#fef2f2"}
-                        onMouseLeave={e => e.currentTarget.style.background = "none"}
-                      >
-                        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {loading ? (
+                <tr><td colSpan="6" style={{ textAlign: "center", padding: 20 }}><Loader2 className="animate-spin text-[#4F46E5]" style={{ margin: "0 auto" }} /></td></tr>
+              ) : error ? (
+                <tr><td colSpan="6" style={{ textAlign: "center", padding: 20, color: "red" }}>{error}</td></tr>
+              ) : filteredStudents.length === 0 ? (
+                <tr><td colSpan="6" style={{ textAlign: "center", padding: 20 }}>No students found.</td></tr>
+              ) : (
+                filteredStudents.map((s, i) => (
+                  <tr key={s.id} style={{ borderBottom: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#fafbfc" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#f0f9ff"}
+                    onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#fafbfc"}
+                  >
+                    <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#3b82f6", fontWeight: 600 }}>{s.Studentprofile?.enrollment_no || s.id}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#1e293b", fontWeight: 500 }}>{s.name || `${s.first_name || ''} ${s.last_name || ''}`}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#475569" }}>{s.Studentprofile?.department || "N/A"}</td>
+                    <td style={{ padding: "14px 20px", fontSize: 13.5, color: "#475569" }}>{s.Studentprofile?.semester || "N/A"}</td>
+                    <td style={{ padding: "14px 20px" }}>
+                      <span style={{ padding: "4px 12px", borderRadius: 20, fontSize: 12.5, fontWeight: 600, ...(statusStyles[s.status || "Active"] || statusStyles.Active) }}>
+                        {s.status || "Active"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "14px 20px", textAlign: "right" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                        <button title="View" style={{ background: "none", border: "none", cursor: "pointer", color: "#3b82f6", padding: 4, borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#eff6ff"}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}
+                        >
+                          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </button>
+                        <button title="Edit" style={{ background: "none", border: "none", cursor: "pointer", color: "#6366f1", padding: 4, borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#eef2ff"}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}
+                        >
+                          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button title="Deactivate" style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", padding: 4, borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#fef2f2"}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}
+                        >
+                          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
 
@@ -186,7 +216,10 @@ export default function StudentsManagement() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 13, color: "#64748b", marginRight: 8 }}>1–10 of 1,248</span>
+              <span style={{ fontSize: 13, color: "#64748b", marginRight: 8 }}>
+                {Math.min(totalCount, (currentPage - 1) * rowsPerPage + 1)}–
+                {Math.min(totalCount, currentPage * rowsPerPage)} of {totalCount}
+              </span>
               <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
                 style={{ width: 32, height: 32, border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: currentPage === 1 ? "not-allowed" : "pointer", color: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", opacity: currentPage === 1 ? 0.5 : 1 }}>
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
@@ -198,12 +231,12 @@ export default function StudentsManagement() {
                 </button>
               ))}
               <span style={{ fontSize: 13, color: "#94a3b8" }}>...</span>
-              <button onClick={() => setCurrentPage(125)}
-                style={{ width: 32, height: 32, border: currentPage === 125 ? "none" : "1px solid #e2e8f0", borderRadius: 8, background: currentPage === 125 ? "#1e293b" : "#fff", color: currentPage === 125 ? "#fff" : "#374151", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                125
+              <button onClick={() => setCurrentPage(Math.max(1, Math.ceil(totalCount / rowsPerPage)))}
+                style={{ width: 32, height: 32, border: currentPage === Math.ceil(totalCount / rowsPerPage) ? "none" : "1px solid #e2e8f0", borderRadius: 8, background: currentPage === Math.ceil(totalCount / rowsPerPage) ? "#1e293b" : "#fff", color: currentPage === Math.ceil(totalCount / rowsPerPage) ? "#fff" : "#374151", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                {Math.max(1, Math.ceil(totalCount / rowsPerPage))}
               </button>
-              <button onClick={() => setCurrentPage(p => Math.min(125, p + 1))} disabled={currentPage === 125}
-                style={{ width: 32, height: 32, border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: currentPage === 125 ? "not-allowed" : "pointer", color: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", opacity: currentPage === 125 ? 0.5 : 1 }}>
+              <button onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / rowsPerPage), p + 1))} disabled={currentPage >= Math.ceil(totalCount / rowsPerPage)}
+                style={{ width: 32, height: 32, border: "1px solid #e2e8f0", borderRadius: 8, background: "#fff", cursor: currentPage >= Math.ceil(totalCount / rowsPerPage) ? "not-allowed" : "pointer", color: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", opacity: currentPage >= Math.ceil(totalCount / rowsPerPage) ? 0.5 : 1 }}>
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6" /></svg>
               </button>
             </div>

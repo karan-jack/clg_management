@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../AdminLayout";
+import api from "../../../services/api";
+import { Loader2 } from "lucide-react";
 
 const departments = [
   "Computer Science",
@@ -14,24 +16,6 @@ const designations = [
   "Professor",
   "Associate Professor",
   "Assistant Professor",
-];
-
-const initialProfessors = [
-  { id: "EMP001", name: "Dr. Rajesh Sharma", department: "Computer Science", designation: "Professor" },
-  { id: "EMP002", name: "Dr. Priya Roy", department: "Electronics & Comm.", designation: "Associate Professor" },
-  { id: "EMP003", name: "Dr. Amit Verma", department: "Mechanical Engg.", designation: "Professor" },
-  { id: "EMP004", name: "Dr. Neha Iyer", department: "Information Tech.", designation: "Assistant Professor" },
-  { id: "EMP005", name: "Dr. Sandeep Mehta", department: "Civil Engineering", designation: "Associate Professor" },
-  { id: "EMP006", name: "Dr. Kavita Singh", department: "Electrical Engg.", designation: "Assistant Professor" },
-  { id: "EMP007", name: "Dr. Anil Kumar", department: "Computer Science", designation: "Associate Professor" },
-  { id: "EMP008", name: "Dr. Meera Nair", department: "Electronics & Comm.", designation: "Assistant Professor" },
-  { id: "EMP009", name: "Dr. Vikram Joshi", department: "Mechanical Engg.", designation: "Professor" },
-  { id: "EMP010", name: "Dr. Pooja Desai", department: "Information Tech.", designation: "Associate Professor" },
-  { id: "EMP011", name: "Dr. Ravi Tiwari", department: "Civil Engineering", designation: "Professor" },
-  { id: "EMP012", name: "Dr. Sunita Rao", department: "Electrical Engg.", designation: "Associate Professor" },
-  { id: "EMP013", name: "Dr. Karan Malhotra", department: "Computer Science", designation: "Assistant Professor" },
-  { id: "EMP014", name: "Dr. Divya Pillai", department: "Information Tech.", designation: "Professor" },
-  { id: "EMP015", name: "Dr. Mohan Das", department: "Mechanical Engg.", designation: "Associate Professor" },
 ];
 
 const navItems = [
@@ -117,28 +101,45 @@ const labelStyle = { display: "block", fontSize: 12, fontWeight: 600, color: "#6
 const inputStyle = { width: "100%", padding: "9px 12px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 14, color: "#374151", boxSizing: "border-box", outline: "none", background: "#fff" };
 
 export default function ProfessorsManagement() {
-  const [professors, setProfessors] = useState(initialProfessors);
+  const [professors, setProfessors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [editedRows, setEditedRows] = useState({});
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(["User Management", "Academic Management", "Learning Management", "Analytics"]);
   const [savedBanner, setSavedBanner] = useState(false);
 
-  const filtered = professors.filter(p =>
-    !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    fetchProfessors();
+  }, []);
+
+  const fetchProfessors = async () => {
+    try {
+      setLoading(true);
+      const res = await api.adminProfessors.getAll();
+      if (res.success) {
+        setProfessors(res.rows || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filtered = professors.filter(p => {
+    const profName = p.name || `${p.first_name || ''} ${p.last_name || ''}`;
+    const empId = p.Professorprofile?.employee_id || p.id?.toString();
+    return !searchQuery || profName.toLowerCase().includes(searchQuery.toLowerCase()) || empId.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const pageData = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
   const pageIds = pageData.map(p => p.id);
   const allPageSelected = pageIds.length > 0 && pageIds.every(id => selected.includes(id));
-
-  const toggleSection = (sec) => setExpandedSections(prev => prev.includes(sec) ? prev.filter(s => s !== sec) : [...prev, sec]);
 
   const toggleSelectAll = () => {
     if (allPageSelected) setSelected(prev => prev.filter(id => !pageIds.includes(id)));
@@ -151,26 +152,52 @@ export default function ProfessorsManagement() {
     setEditedRows(prev => ({ ...prev, [id]: { ...(prev[id] || {}), [field]: value } }));
   };
 
-  const saveChanges = () => {
-    setProfessors(prev => prev.map(p => ({ ...p, ...(editedRows[p.id] || {}) })));
-    setEditedRows({});
-    setSavedBanner(true);
-    setTimeout(() => setSavedBanner(false), 2500);
+  const saveChanges = async () => {
+    try {
+      for (const id of Object.keys(editedRows)) {
+        await api.adminProfessors.update(id, editedRows[id]);
+      }
+      setEditedRows({});
+      setSavedBanner(true);
+      setTimeout(() => setSavedBanner(false), 2500);
+      fetchProfessors();
+    } catch (error) {
+      console.error("Failed to save changes", error);
+    }
   };
 
-  const deleteSelected = () => {
-    setProfessors(prev => prev.filter(p => !selected.includes(p.id)));
-    setSelected([]);
-    setPage(1);
+  const deleteSelected = async () => {
+    try {
+      for (const id of selected) {
+        await api.adminProfessors.delete(id);
+      }
+      setSelected([]);
+      setPage(1);
+      fetchProfessors();
+    } catch (error) {
+      console.error("Failed to delete", error);
+    }
   };
 
-  const addProfessor = ({ name, department, designation, id }) => {
-    setProfessors(prev => [...prev, { id, name, department, designation }]);
+  const addProfessor = async ({ name, department, designation, id }) => {
+    try {
+      await api.adminProfessors.create({ name, department, designation, employee_id: id });
+      fetchProfessors();
+    } catch (error) {
+      console.error("Failed to add professor", error);
+    }
   };
 
   const nextId = `EMP${String(professors.length + 1).padStart(3, "0")}`;
 
-  const getVal = (prof, field) => editedRows[prof.id]?.[field] ?? prof[field];
+  const getVal = (prof, field) => {
+    if (editedRows[prof.id]?.[field] !== undefined) return editedRows[prof.id][field];
+    if (field === 'name') return prof.name || `${prof.first_name || ''} ${prof.last_name || ''}`;
+    if (field === 'department') return prof.Professorprofile?.department || departments[0];
+    if (field === 'designation') return prof.Professorprofile?.designation || designations[0];
+    if (field === 'employee_id') return prof.Professorprofile?.employee_id || prof.id;
+    return prof[field];
+  };
 
   return (
     <AdminLayout
@@ -180,76 +207,7 @@ export default function ProfessorsManagement() {
       activePath="/admin/professors"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#f8f9fb", color: "#1a202c" }}>
-      {/* Sidebar */}
-      <aside style={{ width: 220, background: "#fff", borderRight: "1px solid #e5e7eb", display: "none", flexDirection: "column", flexShrink: 0 }}>
-        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #f0f0f0" }}>
-          <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.5px", color: "#1e3a5f" }}>NAME</span>
-        </div>
-        <div style={{ padding: "12px 12px 4px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f3f4f6", borderRadius: 8, padding: "7px 10px" }}>
-            <svg width="14" height="14" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-            <input placeholder="Search..." style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: "#374151", width: "100%" }} />
-          </div>
-        </div>
-        <nav style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
-          <SidebarItem icon={<svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>} label="Dashboard" />
-          {navItems.map(({ section, icon, children }) => (
-            <div key={section}>
-              <button onClick={() => toggleSection(section)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "8px 16px", background: "none", border: "none", cursor: "pointer", color: "#374151", fontSize: 13, fontWeight: 700 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>{icon}{section}</span>
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ transform: expandedSections.includes(section) ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="6 9 12 15 18 9" /></svg>
-              </button>
-              {expandedSections.includes(section) && children.map(child => (
-                <SidebarChild key={child} label={child} active={child === "Professors"} />
-              ))}
-            </div>
-          ))}
-          <SidebarItem icon={<svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} label="Profile" />
-        </nav>
-      </aside>
 
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {/* Topbar */}
-        <header style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 28px", height: 60, display: "none", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#1e3a5f" }}>Professors Management</h1>
-            <p style={{ margin: 0, fontSize: 12, color: "#9ca3af", marginTop: 1 }}>
-              Dashboard &rsaquo; User Management &rsaquo; <span style={{ color: "#1e3a5f", fontWeight: 600 }}>Professors</span>
-            </p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, position: "relative" }}>
-            <button style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "#6b7280", padding: 4 }}>
-              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
-              <span style={{ position: "absolute", top: -2, right: -2, background: "#ef4444", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>3</span>
-            </button>
-            <div style={{ position: "relative" }}>
-              <button onClick={() => setShowDropdown(v => !v)} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer" }}>
-                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#1e3a5f", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>AU</div>
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontSize: 11, color: "#9ca3af", lineHeight: 1 }}>Welcome,</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1a202c" }}>Admin User</div>
-                </div>
-                <svg width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg>
-              </button>
-              {showDropdown && (
-                <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: 180, zIndex: 50 }}>
-                  {["My Profile", "Account Settings", "Change Password"].map(item => (
-                    <button key={item} onClick={() => setShowDropdown(false)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#374151", textAlign: "left" }}>
-                      {item}
-                    </button>
-                  ))}
-                  <div style={{ borderTop: "1px solid #f0f0f0", margin: "4px 0" }} />
-                  <button onClick={() => setShowDropdown(false)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
-                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
 
         {/* Content */}
         <main style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
@@ -301,7 +259,7 @@ export default function ProfessorsManagement() {
                 ) : pageData.map((prof, idx) => (
                   <tr key={prof.id} style={{ borderBottom: "1px solid #f0f1f3", background: selected.includes(prof.id) ? "#eff6ff" : idx % 2 === 0 ? "#fff" : "#fafafa" }}>
                     <td style={tdStyle}><input type="checkbox" checked={selected.includes(prof.id)} onChange={() => toggleSelect(prof.id)} style={{ cursor: "pointer" }} /></td>
-                    <td style={{ ...tdStyle, fontWeight: 600, color: "#1e3a5f", fontSize: 13 }}>{prof.id}</td>
+                    <td style={{ ...tdStyle, fontWeight: 600, color: "#1e3a5f", fontSize: 13 }}>{getVal(prof, 'employee_id')}</td>
                     <td style={tdStyle}>
                       <input
                         value={getVal(prof, "name")}
@@ -352,32 +310,13 @@ export default function ProfessorsManagement() {
             </div>
           </div>
         </main>
-      </div>
-
       {showAddModal && <AddProfessorModal onClose={() => setShowAddModal(false)} onAdd={addProfessor} nextId={nextId} />}
-
-      {showDropdown && <div onClick={() => setShowDropdown(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />}
-      </div>
       </div>
     </AdminLayout>
   );
 }
 
-function SidebarItem({ icon, label }) {
-  return (
-    <button style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 16px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#374151", fontWeight: 500 }}>
-      <span style={{ color: "#6b7280" }}>{icon}</span>{label}
-    </button>
-  );
-}
 
-function SidebarChild({ label, active }) {
-  return (
-    <button style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 16px 7px 36px", background: active ? "#eff6ff" : "none", border: "none", cursor: "pointer", fontSize: 13, color: active ? "#1e3a5f" : "#6b7280", fontWeight: active ? 700 : 400, borderLeft: active ? "3px solid #2563eb" : "3px solid transparent" }}>
-      {label}
-    </button>
-  );
-}
 
 const thStyle = { padding: "11px 14px", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" };
 const tdStyle = { padding: "10px 14px", fontSize: 13, color: "#374151" };

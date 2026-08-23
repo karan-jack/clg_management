@@ -7,6 +7,14 @@ const Studentprofile = require('./StudentProfile')(sequelize, DataTypes);
 const Studentmaster = require('./StudentMaster')(sequelize, DataTypes);
 const Professorprofile = require('./ProfessorProfile')(sequelize, DataTypes);
 const Professormaster = require('./ProfessorMaster')(sequelize, DataTypes);
+const Course = require('./Course')(sequelize, DataTypes);
+const Module = require('./Module')(sequelize, DataTypes);
+const Resource = require('./Resource')(sequelize, DataTypes);
+const Assignment = require('./Assignment')(sequelize, DataTypes);
+const Quiz = require('./Quiz')(sequelize, DataTypes);
+const LearningPath = require('./LearningPath')(sequelize, DataTypes);
+const Activity = require('./Activity')(sequelize, DataTypes);
+const Mark = require('./Mark')(sequelize, DataTypes);
 
 User.belongsTo(Role, { foreignKey: 'role_id' });
 Role.hasMany(User, { foreignKey: 'role_id' });
@@ -24,5 +32,13 @@ module.exports = {
   Studentprofile,
   Studentmaster,
   Professorprofile,
-  Professormaster
+  Professormaster,
+  Course,
+  Module,
+  Resource,
+  Assignment,
+  Quiz,
+  LearningPath,
+  Activity,
+  Mark
 };
