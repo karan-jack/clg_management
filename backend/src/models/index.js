@@ -104,19 +104,12 @@ module.exports = {
   Quiz,
   LearningPath,
   Activity,
-  Mark
+  Mark,
   ProfessorCourse,
   StudentCourse,
-  Module,
-  Resource,
-  Mark,
-  Quiz,
-  Assignment,
-  LearningPath,
   LearningPathCourse,
   Badge,
   StudentBadge,
   Certificate,
-  Publication,
-  Activity
+  Publication
 };

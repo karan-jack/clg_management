@@ -1,25 +1,48 @@
-import React, { useState } from 'react';
-// Import the shared global layouts directly from your dashboard module
+import React, { useState, useEffect } from 'react';
 import { MainSidebar, Topbar } from '../Dashboard';
+import api from '../../../services/api';
+import { Loader2 } from 'lucide-react';
 
 export default function AcademicRecords({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
-  const [selectedSemester, setSelectedSemester] = useState('Semester 3');
+  const [selectedSemester, setSelectedSemester] = useState('1');
+  
+  const [data, setData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  useEffect(() => {
+    fetchRecords();
+  }, [selectedSemester]);
+
+  const fetchDashboard = async () => {
+    try {
+      const res = await api.getStudentDashboard();
+      setDashboardData(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchRecords = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getStudentAcademicRecords(`?semester=${selectedSemester}`);
+      setData(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const badges = [
     ['🏅', 'Top Performer', 'Scored in the top 10%', '10 May 2024'],
     ['🏆', 'Consistent Learner', 'Completed 10+ courses', '22 Apr 2024'],
-    ['📖', 'Quick Learner', 'Completed a course in record time', '05 Apr 2024'],
-    ['🎯', 'High Achiever', 'Scored above 90%', '15 Mar 2024'],
-  ];
-
-  const subjects = [
-    ['CS301', 'Data Structures', '85', '100', 'A'],
-    ['MA301', 'Discrete Mathematics', '78', '100', 'B+'],
-    ['PH301', 'Physics for Computing', '82', '100', 'A-'],
-    ['CS302', 'Database Management Systems', '88', '100', 'A'],
-    ['EE301', 'Digital Logic Design', '75', '100', 'B+'],
-    ['HU301', 'Technical Communication', '90', '100', 'A+'],
   ];
 
   // Export to Excel (CSV format natively opened by Excel)
@@ -37,11 +60,14 @@ export default function AcademicRecords({ currentPage, setPage }) {
     csvRows.push(headers.join(','));
 
     // Data Rows
-    subjects.forEach((row) => {
-      // Escape commas inside text fields if any
-      const formattedRow = row.map((field) => `"${field}"`);
-      csvRows.push(formattedRow.join(','));
-    });
+    if (data?.records) {
+      data.records.forEach((row) => {
+        const formattedRow = [
+          row.course_code, row.course_title, row.total, '100', row.grade
+        ].map(field => `"${field}"`);
+        csvRows.push(formattedRow.join(','));
+      });
+    }
 
     const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -82,9 +108,9 @@ export default function AcademicRecords({ currentPage, setPage }) {
               </div>
 
               <div>
-                <h2 className="text-lg font-bold text-[#0b1a30]">Student</h2>
+                <h2 className="text-lg font-bold text-[#0b1a30]">{dashboardData?.studentInfo?.name || 'Student'}</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Student ID: 2024001
+                  Department: {dashboardData?.studentInfo?.department || 'General'}
                 </p>
               </div>
             </div>
@@ -99,9 +125,14 @@ export default function AcademicRecords({ currentPage, setPage }) {
                 onChange={(e) => setSelectedSemester(e.target.value)}
                 className="h-[42px] w-full rounded-md border border-[#e3d2c4] bg-[#fcf9f6] px-3 text-sm text-slate-600 outline-none"
               >
-                <option>Semester 3</option>
-                <option>Semester 2</option>
-                <option>Semester 1</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="3">Semester 3</option>
+                <option value="4">Semester 4</option>
+                <option value="5">Semester 5</option>
+                <option value="6">Semester 6</option>
+                <option value="7">Semester 7</option>
+                <option value="8">Semester 8</option>
               </select>
             </div>
           </div>
@@ -136,7 +167,7 @@ export default function AcademicRecords({ currentPage, setPage }) {
           {/* Action Row: Title + Export Buttons */}
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
             <h2 className="font-serif text-lg font-black text-[#0b1a30]">
-              {selectedSemester}
+              Semester {selectedSemester}
             </h2>
 
             <div className="flex items-center gap-3">
@@ -182,25 +213,36 @@ export default function AcademicRecords({ currentPage, setPage }) {
                 </thead>
 
                 <tbody>
-                  {subjects.map((row) => (
-                    <tr key={row[0]} className="border-b border-[#f0e7df]">
-                      {row.map((cell) => (
-                        <td
-                          key={cell}
-                          className="px-6 py-4 text-sm text-slate-600"
-                        >
-                          {cell}
-                        </td>
-                      ))}
+                  {loading ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-10 text-center">
+                        <Loader2 className="animate-spin text-blue-600 mx-auto" size={32} />
+                      </td>
                     </tr>
-                  ))}
+                  ) : data?.records?.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-10 text-center text-slate-500">
+                        No academic records found for this semester.
+                      </td>
+                    </tr>
+                  ) : (
+                    data?.records?.map((row, idx) => (
+                      <tr key={idx} className="border-b border-[#f0e7df]">
+                        <td className="px-6 py-4 text-sm text-slate-600 font-semibold">{row.course_code}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600">{row.course_title}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600">{row.total}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600">100</td>
+                        <td className="px-6 py-4 text-sm font-bold text-[#0b1a30]">{row.grade}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
             <div className="grid border-t border-[#eae1d8] md:grid-cols-2">
-              <Summary icon="📖" label="Total Credits" value="20" />
-              <Summary icon="📊" label="CGPA" value="8.32" />
+              <Summary icon="📖" label="Total Credits" value={data?.records?.reduce((acc, curr) => acc + (curr.credits || 3), 0) || 0} />
+              <Summary icon="📊" label="CGPA" value={dashboardData?.studentInfo?.gpa || '0.00'} />
             </div>
           </div>
         </section>

@@ -27,6 +27,28 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+const uploadStudents = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    const result = await adminService.uploadStudents(req.file.path);
+    return res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    return handleControllerError(res, error, 'Failed to upload students');
+  }
+};
+
+const updatePathCourses = async (req, res) => {
+  try {
+    const { courses } = req.body;
+    await adminService.updatePathCourses(req.params.id, courses);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return handleControllerError(res, error, 'Failed to update path courses');
+  }
+};
+
 const generateCrudControllers = (serviceGroup) => {
     return {
         getAll: async (req, res) => {
@@ -66,6 +88,8 @@ const generateCrudControllers = (serviceGroup) => {
 module.exports = {
   getDashboard,
   getAnalytics,
+  uploadStudents,
+  updatePathCourses,
   studentController: generateCrudControllers('Student'),
   professorController: generateCrudControllers('Professor'),
   adminController: generateCrudControllers('Admin'),

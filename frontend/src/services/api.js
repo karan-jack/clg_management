@@ -20,8 +20,13 @@ async function request(endpoint, options = {}) {
     headers,
   };
 
-  if (config.body && typeof config.body !== 'string') {
+  if (config.body && !(config.body instanceof FormData) && typeof config.body !== 'string') {
     config.body = JSON.stringify(config.body);
+  }
+
+  // If using FormData, let the browser set the Content-Type header with the boundary
+  if (config.body instanceof FormData) {
+    delete config.headers['Content-Type'];
   }
 
   const url = endpoint.startsWith('http')
@@ -120,7 +125,8 @@ export const api = {
     getById: (id) => request(`/admin/students/${id}`),
     create: (data) => request(`/admin/students`, { method: 'POST', body: data }),
     update: (id, data) => request(`/admin/students/${id}`, { method: 'PUT', body: data }),
-    delete: (id) => request(`/admin/students/${id}`, { method: 'DELETE' })
+    delete: (id) => request(`/admin/students/${id}`, { method: 'DELETE' }),
+    upload: (formData) => request('/admin/students/upload', { method: 'POST', body: formData })
   },
   adminProfessors: {
     getAll: (params = '') => request(`/admin/professors${params}`),

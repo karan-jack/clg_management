@@ -34,6 +34,28 @@ export default function Dashboard({ currentPage, setPage }) {
     <Topbar {...props} title="STUDENT DASHBOARD" setPage={setPage} studentInfo={data?.studentInfo} />
   );
 
+  // Calculate analytics from courseProgressSummary
+  let analytics = [];
+  if (data?.courseProgressSummary && data.courseProgressSummary.length > 0) {
+    const total = data.courseProgressSummary.length;
+    const completed = data.courseProgressSummary.filter(c => c.status === 'Completed').length;
+    const inProgress = data.courseProgressSummary.filter(c => c.status === 'In Progress').length;
+    
+    analytics = [
+      ['Course Completion', Math.round((completed / total) * 100) || 0, 'from-emerald-400 to-teal-500'],
+      ['Active Learning', Math.round((inProgress / total) * 100) || 0, 'from-blue-500 to-indigo-600'],
+      ['Avg. Score', data?.studentInfo?.gpa ? Math.round(parseFloat(data.studentInfo.gpa) * 10) : 0, 'from-purple-500 to-pink-500'],
+      ['Attendance', 92, 'from-orange-400 to-rose-400'] // Mock attendance
+    ];
+  } else {
+    analytics = [
+      ['Course Completion', 0, 'from-emerald-400 to-teal-500'],
+      ['Active Learning', 0, 'from-blue-500 to-indigo-600'],
+      ['Avg. Score', 0, 'from-purple-500 to-pink-500'],
+      ['Attendance', 100, 'from-orange-400 to-rose-400']
+    ];
+  }
+
   return (
     <div className="flex min-h-screen bg-[#fdfaf7] text-slate-900">
       <SharedSidebar />

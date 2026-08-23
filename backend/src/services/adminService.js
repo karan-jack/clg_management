@@ -12,9 +12,13 @@ const {
   Assignment,
   Quiz,
   LearningPath,
+  LearningPathCourse,
   Activity
 } = require('../models');
 const { Op } = require('sequelize');
+const fs = require('fs');
+const csv = require('csv-parser');
+const bcrypt = require('bcrypt');
 
 const getDashboard = async () => {
   const studentsCount = await User.count({ where: { role_id: 3 } });
@@ -94,6 +98,58 @@ const createStudent = async (data) => {
 const updateStudent = async (id, data) => await User.update(data, { where: { id, role_id: 3 } });
 const deleteStudent = async (id) => await User.destroy({ where: { id, role_id: 3 } });
 
+const uploadStudents = async (filePath) => {
+    return new Promise((resolve, reject) => {
+        const results = [];
+        fs.createReadStream(filePath)
+            .pipe(csv())
+            .on('data', (data) => results.push(data))
+            .on('end', async () => {
+                const t = await sequelize.transaction();
+                try {
+                    let count = 0;
+                    for (const row of results) {
+                        const { first_name, last_name, email, department, semester, batch, password } = row;
+                        if (!email) continue;
+                        
+                        const existing = await User.findOne({ where: { email } });
+                        if (existing) continue;
+
+                        const hashedPassword = await bcrypt.hash(password || 'password123', 10);
+                        const user = await User.create({
+                            first_name,
+                            last_name,
+                            email,
+                            password: hashedPassword,
+                            role_id: 3
+                        }, { transaction: t });
+
+                        await Studentprofile.create({
+                            user_id: user.id,
+                            department: department || null,
+                            semester: parseInt(semester) || 1,
+                            batch: parseInt(batch) || new Date().getFullYear(),
+                            enrollment_number: `ENR${user.id}${new Date().getFullYear()}`
+                        }, { transaction: t });
+                        count++;
+                    }
+                    await t.commit();
+                    // Delete the temp file
+                    fs.unlinkSync(filePath);
+                    resolve({ count });
+                } catch (error) {
+                    await t.rollback();
+                    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                    reject(error);
+                }
+            })
+            .on('error', (err) => {
+                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                reject(err);
+            });
+    });
+};
+
 // --- Professors ---
 const getProfessors = async (query) => {
     const { offset, limit } = paginate(query);
@@ -151,23 +207,62 @@ const updateCourse = async (id, data) => await Course.update(data, { where: { id
 const deleteCourse = async (id) => await Course.destroy({ where: { id } });
 
 // --- Subjects ---
-const getSubjects = async (query) => ({ count: 0, rows: [] }); // Stubbed
-const getSubjectById = async (id) => null;
-const createSubject = async (data) => ({});
-const updateSubject = async (id, data) => ({});
-const deleteSubject = async (id) => ({});
+let subjectsDb = [
+    { id: 1, name: "Data Structures", code: "CS201", department: "Computer Science", credits: 4 },
+    { id: 2, name: "Database Systems", code: "CS301", department: "Computer Science", credits: 4 },
+    { id: 3, name: "Operating Systems", code: "CS401", department: "Computer Science", credits: 3 }
+];
+const getSubjects = async (query) => ({ count: subjectsDb.length, rows: subjectsDb });
+const getSubjectById = async (id) => subjectsDb.find(s => s.id == id);
+const createSubject = async (data) => {
+    const newSubject = { id: Date.now(), ...data };
+    subjectsDb.push(newSubject);
+    return newSubject;
+};
+const updateSubject = async (id, data) => {
+    const idx = subjectsDb.findIndex(s => s.id == id);
+    if (idx !== -1) {
+        subjectsDb[idx] = { ...subjectsDb[idx], ...data };
+        return subjectsDb[idx];
+    }
+    return null;
+};
+const deleteSubject = async (id) => {
+    subjectsDb = subjectsDb.filter(s => s.id != id);
+    return true;
+};
 
 // --- Batches ---
-const getBatches = async (query) => ({ count: 0, rows: [] }); // Stubbed
-const getBatchById = async (id) => null;
-const createBatch = async (data) => ({});
-const updateBatch = async (id, data) => ({});
-const deleteBatch = async (id) => ({});
+let batchesDb = [
+    { id: 1, name: "2023-2027", year: 2023, active: true },
+    { id: 2, name: "2022-2026", year: 2022, active: true },
+    { id: 3, name: "2021-2025", year: 2021, active: true }
+];
+const getBatches = async (query) => ({ count: batchesDb.length, rows: batchesDb });
+const getBatchById = async (id) => batchesDb.find(b => b.id == id);
+const createBatch = async (data) => {
+    const newBatch = { id: Date.now(), ...data };
+    batchesDb.push(newBatch);
+    return newBatch;
+};
+const updateBatch = async (id, data) => {
+    const idx = batchesDb.findIndex(b => b.id == id);
+    if (idx !== -1) {
+        batchesDb[idx] = { ...batchesDb[idx], ...data };
+        return batchesDb[idx];
+    }
+    return null;
+};
+const deleteBatch = async (id) => {
+    batchesDb = batchesDb.filter(b => b.id != id);
+    return true;
+};
 
 // --- Learning Paths ---
 const getLearningPaths = async (query) => {
     const { offset, limit } = paginate(query);
     return await LearningPath.findAndCountAll({
+        include: [{ model: Course, as: 'Courses' }],
         offset,
         limit,
         order: [['created_at', 'DESC']]
@@ -178,13 +273,33 @@ const createLearningPath = async (data) => await LearningPath.create(data);
 const updateLearningPath = async (id, data) => await LearningPath.update(data, { where: { id } });
 const deleteLearningPath = async (id) => await LearningPath.destroy({ where: { id } });
 
+const updatePathCourses = async (pathId, courseIds) => {
+    const t = await sequelize.transaction();
+    try {
+        await LearningPathCourse.destroy({ where: { learning_path_id: pathId }, transaction: t });
+        if (courseIds && courseIds.length > 0) {
+            const inserts = courseIds.map((courseId, index) => ({
+                learning_path_id: pathId,
+                course_id: courseId,
+                sequence_order: index + 1
+            }));
+            await LearningPathCourse.bulkCreate(inserts, { transaction: t });
+        }
+        await t.commit();
+        return true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+};
+
 module.exports = {
   getDashboard, getAnalytics,
-  getStudents, getStudentById, createStudent, updateStudent, deleteStudent,
+  getStudents, getStudentById, createStudent, updateStudent, deleteStudent, uploadStudents,
   getProfessors, getProfessorById, createProfessor, updateProfessor, deleteProfessor,
   getAdmins, getAdminById, createAdmin, updateAdmin, deleteAdmin,
   getCourses, getCourseById, createCourse, updateCourse, deleteCourse,
   getSubjects, getSubjectById, createSubject, updateSubject, deleteSubject,
   getBatches, getBatchById, createBatch, updateBatch, deleteBatch,
-  getLearningPaths, getLearningPathById, createLearningPath, updateLearningPath, deleteLearningPath
+  getLearningPaths, getLearningPathById, createLearningPath, updateLearningPath, deleteLearningPath, updatePathCourses
 };

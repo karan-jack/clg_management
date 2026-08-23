@@ -194,7 +194,7 @@ export default function UploadMarks({ onNavigate }) {
             return;
           }
 
-          await (window.api?.submitMarks || import('../../services/api').then(m => m.default.submitMarks))({
+          await (window.api?.postProfessorMarks || import('../../services/api').then(m => m.default.postProfessorMarks))({
             student_id: student.student_id,
             course_id: selectedSubject,
             semester: student.semester,

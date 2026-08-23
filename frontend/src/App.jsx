@@ -10,6 +10,11 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const StudentsManagement = lazy(() => import('./pages/admin/user management/StudentsManagement'));
 const ProfessorsManagement = lazy(() => import('./pages/admin/user management/ProfessorsManagement'));
 const AdminsManagement = lazy(() => import('./pages/admin/user management/AdminsManagement (2)'));
+const StudentMaster = lazy(() => import('./pages/admin/academic management/StudentMaster'));
+const BatchesManagement = lazy(() => import('./pages/admin/academic management/BatchesManagement'));
+const SubjectsManagement = lazy(() => import('./pages/admin/academic management/SubjectsManagement'));
+const CoursesManagement = lazy(() => import('./pages/admin/academic management/CoursesManagement'));
+const LearningPathsManagement = lazy(() => import('./pages/admin/academic management/LearningPathsManagement'));
 
 // Student Pages (Lazy loaded)
 const StudentDashboard = lazy(() => import('./pages/student/Dashboard'));
@@ -133,11 +138,11 @@ export default function App() {
           <Route path="/admin/students" element={<ProtectedRoute allowedRole="admin"><StudentsManagement /></ProtectedRoute>} />
           <Route path="/admin/professors" element={<ProtectedRoute allowedRole="admin"><ProfessorsManagement /></ProtectedRoute>} />
           <Route path="/admin/admins" element={<ProtectedRoute allowedRole="admin"><AdminsManagement /></ProtectedRoute>} />
-          <Route path="/admin/student-master" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Student Master" description="This section will show the student master management tools." /></ProtectedRoute>} />
-          <Route path="/admin/batches" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Batches" description="This section will show batch management tools." /></ProtectedRoute>} />
-          <Route path="/admin/subjects" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Subjects" description="This section will show subject management tools." /></ProtectedRoute>} />
-          <Route path="/admin/courses" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Courses" description="This section will show the course management tools." /></ProtectedRoute>} />
-          <Route path="/admin/learning-paths" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Learning Paths" description="This section will show learning path management tools." /></ProtectedRoute>} />
+          <Route path="/admin/student-master" element={<ProtectedRoute allowedRole="admin"><StudentMaster /></ProtectedRoute>} />
+          <Route path="/admin/batches" element={<ProtectedRoute allowedRole="admin"><BatchesManagement /></ProtectedRoute>} />
+          <Route path="/admin/subjects" element={<ProtectedRoute allowedRole="admin"><SubjectsManagement /></ProtectedRoute>} />
+          <Route path="/admin/courses" element={<ProtectedRoute allowedRole="admin"><CoursesManagement /></ProtectedRoute>} />
+          <Route path="/admin/learning-paths" element={<ProtectedRoute allowedRole="admin"><LearningPathsManagement /></ProtectedRoute>} />
           <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Analytics" description="This section will show platform analytics reports." /></ProtectedRoute>} />
           <Route path="/admin/profile" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Profile" description="This section will show the admin profile and account settings." /></ProtectedRoute>} />
 

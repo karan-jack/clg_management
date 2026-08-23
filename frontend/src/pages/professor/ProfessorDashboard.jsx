@@ -173,7 +173,7 @@ export default function ProfessorDashboard({ onNavigate }) {
 
             <div className="welcome-text">
               <p>Welcome,</p>
-              <h4>Shubhabrata B.</h4>
+              <h4>{data?.professorName || 'Professor'}</h4>
             </div>
 
             <button
@@ -193,7 +193,7 @@ export default function ProfessorDashboard({ onNavigate }) {
                   <div className="avatar">SB</div>
                   <div>
                     <p>Welcome,</p>
-                    <h4>Shubhabrata B.</h4>
+                    <h4>{data?.professorName || 'Professor'}</h4>
                   </div>
                 </div>
 
@@ -229,19 +229,26 @@ export default function ProfessorDashboard({ onNavigate }) {
           ) : (
             <>
               <div className="batch-grid">
-                {(data?.assignedBatches || [
-                  { batch: "2025-2029", percent: 30, color: "#ded4f2", ring: "#b49adf" },
-                  { batch: "2024-2028", percent: 50, color: "#d3d8ee", ring: "#7e91d4" },
-                  { batch: "2025-2029", percent: 30, color: "#c8ebe8", ring: "#72c9c3" }
-                ]).map((b, i) => (
-                  <BatchCard
-                    key={i}
-                    batch={b.batch || `Batch ${i+1}`}
-                    percent={b.percent || 0} 
-                    color={b.color || "#ded4f2"} 
-                    ring={b.ring || "#b49adf"} 
-                  />
-                ))}
+                {data?.assignedCourses && data.assignedCourses.length > 0 ? data.assignedCourses.map((c, i) => {
+                  const colors = [
+                    { color: "#ded4f2", ring: "#b49adf" },
+                    { color: "#d3d8ee", ring: "#7e91d4" },
+                    { color: "#c8ebe8", ring: "#72c9c3" },
+                    { color: "#ffe4e1", ring: "#ffb6c1" }
+                  ];
+                  const scheme = colors[i % colors.length];
+                  return (
+                    <BatchCard
+                      key={c.id}
+                      batch={c.code}
+                      percent={Math.floor(Math.random() * 40) + 40} // Mock progress
+                      color={scheme.color} 
+                      ring={scheme.ring} 
+                    />
+                  );
+                }) : (
+                  <p style={{ padding: '0 20px', color: '#6B7280' }}>No courses assigned yet.</p>
+                )}
               </div>
 
               <h3 className="section-heading">Overview</h3>

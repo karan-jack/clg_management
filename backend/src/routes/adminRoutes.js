@@ -20,6 +20,13 @@ const mapCrudRoutes = (path, controller) => {
     router.delete(`${path}/:id`, controller.delete);
 };
 
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
+// Custom routes (must come before generic mapCrudRoutes)
+router.post('/students/upload', upload.single('file'), adminController.uploadStudents);
+router.put('/learning-paths/:id/courses', adminController.updatePathCourses);
+
 // CRUD Routes
 mapCrudRoutes('/students', adminController.studentController);
 mapCrudRoutes('/professors', adminController.professorController);

@@ -1,121 +1,31 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MainSidebar, Topbar } from '../Dashboard';
-
-const initialLeaderboardData = [
-  {
-    rank: 1,
-    id: 'ENR00125',
-    batch: '2024',
-    name: 'Student 1',
-    dept: 'Computer Science',
-    sem: 4,
-    courses: 12,
-    xp: 12450,
-    badges: 18,
-  },
-  {
-    rank: 2,
-    id: 'ENR00148',
-    batch: '2024',
-    name: 'Student 2',
-    dept: 'Computer Science',
-    sem: 4,
-    courses: 11,
-    xp: 11230,
-    badges: 16,
-  },
-  {
-    rank: 3,
-    id: 'ENR00098',
-    batch: '2024',
-    name: 'Student 3',
-    dept: 'Information Technology',
-    sem: 4,
-    courses: 10,
-    xp: 10890,
-    badges: 15,
-  },
-  {
-    rank: 4,
-    id: 'ENR00167',
-    batch: '2024',
-    name: 'Student 4',
-    dept: 'Electronics & Comm.',
-    sem: 4,
-    courses: 10,
-    xp: 9750,
-    badges: 14,
-  },
-  {
-    rank: 5,
-    id: 'ENR00112',
-    batch: '2023',
-    name: 'Student 5',
-    dept: 'Computer Science',
-    sem: 6,
-    courses: 9,
-    xp: 9240,
-    badges: 13,
-  },
-  {
-    rank: 6,
-    id: 'ENR00076',
-    batch: '2024',
-    name: 'Student 6',
-    dept: 'Information Technology',
-    sem: 4,
-    courses: 9,
-    xp: 8880,
-    badges: 12,
-  },
-  {
-    rank: 7,
-    id: 'ENR00109',
-    batch: '2023',
-    name: 'Student 7',
-    dept: 'Electronics & Comm.',
-    sem: 6,
-    courses: 8,
-    xp: 8150,
-    badges: 11,
-  },
-  {
-    rank: 8,
-    id: 'ENR00133',
-    batch: '2024',
-    name: 'Student 8',
-    dept: 'Computer Science',
-    sem: 4,
-    courses: 8,
-    xp: 7920,
-    badges: 11,
-  },
-  {
-    rank: 9,
-    id: 'ENR00054',
-    batch: '2023',
-    name: 'Student 9',
-    dept: 'Mechanical Engineering',
-    sem: 6,
-    courses: 7,
-    xp: 7210,
-    badges: 10,
-  },
-  {
-    rank: 10,
-    id: 'ENR00181',
-    batch: '2023',
-    name: 'Student 10',
-    dept: 'Information Technology',
-    sem: 6,
-    courses: 7,
-    xp: 6980,
-    badges: 9,
-  },
-];
+import api from '../../../services/api';
+import { Loader2 } from 'lucide-react';
 
 export default function Leaderboard({ currentPage, setPage }) {
   const [showProfileCard, setShowProfileCard] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      const res = await api.getStudentLeaderboard();
+      if (res.success && res.data) {
+        setLeaderboardData(res.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [batchFilter, setBatchFilter] = useState('All Batches');
   const [deptFilter, setDeptFilter] = useState('All Departments');
   const [semFilter, setSemFilter] = useState('All Semesters');
@@ -125,12 +35,12 @@ export default function Leaderboard({ currentPage, setPage }) {
   });
 
   const sortedAndFilteredData = useMemo(() => {
-    let processData = [...initialLeaderboardData];
+    let processData = [...leaderboardData];
 
     if (batchFilter !== 'All Batches')
       processData = processData.filter((item) => item.batch === batchFilter);
     if (deptFilter !== 'All Departments')
-      processData = processData.filter((item) => item.dept === deptFilter);
+      processData = processData.filter((item) => item.department === deptFilter);
     if (semFilter !== 'All Semesters')
       processData = processData.filter(
         (item) => item.sem === parseInt(semFilter)
@@ -148,7 +58,7 @@ export default function Leaderboard({ currentPage, setPage }) {
       });
     }
     return processData;
-  }, [batchFilter, deptFilter, semFilter, sortConfig]);
+  }, [batchFilter, deptFilter, semFilter, sortConfig, leaderboardData]);
 
   const requestSort = (key) => {
     // Only allow sorting if the key is one of the sortable columns
@@ -265,58 +175,72 @@ export default function Leaderboard({ currentPage, setPage }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[13px] font-medium text-slate-600">
-                {sortedAndFilteredData.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-slate-50/60 transition-colors"
-                  >
-                    <td className="py-3.5 pl-6 font-bold text-slate-800">
-                      {row.rank === 1 && (
-                        <span className="inline-grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-amber-700 text-xs">
-                          🥇
-                        </span>
-                      )}
-                      {row.rank === 2 && (
-                        <span className="inline-grid h-6 w-6 place-items-center rounded-full bg-slate-200 text-slate-700 text-xs">
-                          🥈
-                        </span>
-                      )}
-                      {row.rank === 3 && (
-                        <span className="inline-grid h-6 w-6 place-items-center rounded-full bg-orange-100 text-orange-700 text-xs">
-                          🥉
-                        </span>
-                      )}
-                      {row.rank > 3 && <span className="pl-2">{row.rank}</span>}
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-500 text-xs">
-                      {row.id}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-500">{row.batch}</td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="grid h-7 w-7 place-items-center rounded-full bg-[#0b1a30] text-[10px] font-black text-white">
-                          ST
-                        </div>
-                        <span className="font-semibold text-[#0b1a30]">
-                          {row.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-600">{row.dept}</td>
-                    <td className="py-3.5 px-4 text-center text-slate-700">
-                      {row.sem}
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-semibold text-slate-700">
-                      {row.courses}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-800">
-                      {row.xp.toLocaleString()}
-                    </td>
-                    <td className="py-3.5 pr-6 text-right font-bold text-slate-800">
-                      {row.badges}
+                {loading ? (
+                  <tr>
+                    <td colSpan="9" className="py-10 text-center">
+                      <Loader2 className="animate-spin text-blue-600 mx-auto" size={32} />
                     </td>
                   </tr>
-                ))}
+                ) : sortedAndFilteredData.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="py-10 text-center text-slate-500">
+                      No leaderboard data found.
+                    </td>
+                  </tr>
+                ) : (
+                  sortedAndFilteredData.map((row) => (
+                    <tr
+                      key={row.rank}
+                      className="hover:bg-slate-50/60 transition-colors"
+                    >
+                      <td className="py-3.5 pl-6 font-bold text-slate-800">
+                        {row.rank === 1 && (
+                          <span className="inline-grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-amber-700 text-xs">
+                            🥇
+                          </span>
+                        )}
+                        {row.rank === 2 && (
+                          <span className="inline-grid h-6 w-6 place-items-center rounded-full bg-slate-200 text-slate-700 text-xs">
+                            🥈
+                          </span>
+                        )}
+                        {row.rank === 3 && (
+                          <span className="inline-grid h-6 w-6 place-items-center rounded-full bg-orange-100 text-orange-700 text-xs">
+                            🥉
+                          </span>
+                        )}
+                        {row.rank > 3 && <span className="pl-2">{row.rank}</span>}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-500 text-xs">
+                        N/A
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500">All</td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="grid h-7 w-7 place-items-center rounded-full bg-[#0b1a30] text-[10px] font-black text-white">
+                            ST
+                          </div>
+                          <span className="font-semibold text-[#0b1a30]">
+                            {row.studentName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600">{row.department}</td>
+                      <td className="py-3.5 px-4 text-center text-slate-700">
+                        All
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-semibold text-slate-700">
+                        {row.completedCourses}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-bold text-slate-800">
+                        {row.xp ? row.xp.toLocaleString() : 0}
+                      </td>
+                      <td className="py-3.5 pr-6 text-right font-bold text-slate-800">
+                        {row.badgesEarned}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
