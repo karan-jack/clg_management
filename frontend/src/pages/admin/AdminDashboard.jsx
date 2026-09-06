@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import AdminHeader from "./AdminHeader";
 import {
   Users, GraduationCap, BookOpen, Shuffle, Home, ChevronDown,
   ChevronRight, Search, Bell, Settings, Lock, LogOut, User,
@@ -159,73 +160,7 @@ export default function AdminDashboard() {
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"auto" }}>
 
         {/* Top bar */}
-        <header style={{ background:"#fff", borderBottom:"1px solid #E5E7EB",
-          padding:"14px 28px", display:"flex", alignItems:"center",
-          justifyContent:"space-between", position:"sticky", top:0, zIndex:20 }}>
-          <div>
-            <h1 style={{ margin:0, fontSize:22, fontWeight:800,
-              fontFamily:inter, letterSpacing:0.3, color:"#111827" }}>
-              WELCOME BACK, ADMIN USER
-            </h1>
-            <p style={{ margin:"2px 0 0", fontSize:13, color:"#6B7280", fontFamily:inter }}>
-              Here's what's happening on your platform today.
-            </p>
-          </div>
-
-          <div style={{ display:"flex", alignItems:"center", gap:18 }}>
-            <div style={{ position:"relative", cursor:"pointer" }}>
-              <Bell size={22} color="#374151" />
-              <span style={{ position:"absolute", top:-5, right:-5,
-                background:"#EF4444", color:"#fff", borderRadius:"50%",
-                width:17, height:17, fontSize:10, fontFamily:inter,
-                display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>
-                3
-              </span>
-            </div>
-
-            <div style={{ position:"relative" }}>
-              <div onClick={() => setProf((o) => !o)}
-                style={{ display:"flex", alignItems:"center", gap:10,
-                  cursor:"pointer", padding:"5px 8px", borderRadius:8,
-                  background: profOpen ? "#F3F4F6" : "transparent" }}>
-                <div style={{ width:36, height:36, borderRadius:"50%",
-                  background:"#1E3A5F", color:"#fff", display:"flex",
-                  alignItems:"center", justifyContent:"center",
-                  fontWeight:700, fontSize:13, fontFamily:inter }}>
-                  AU
-                </div>
-                <div style={{ lineHeight:1.35 }}>
-                  <div style={{ fontSize:11, color:"#9CA3AF", fontFamily:inter }}>Welcome,</div>
-                  <div style={{ fontWeight:700, fontSize:13, color:"#111827", fontFamily:inter }}>Admin User</div>
-                </div>
-                <ChevronDown size={13} color="#9CA3AF" />
-              </div>
-
-              {profOpen && (
-                <div style={{ position:"absolute", right:0, top:"calc(100% + 8px)",
-                  background:"#fff", border:"1px solid #E5E7EB", borderRadius:10,
-                  boxShadow:"0 8px 24px rgba(0,0,0,0.12)", minWidth:190, zIndex:99, overflow:"hidden" }}>
-                  {[{l:"My Profile",Ic:User},{l:"Account Settings",Ic:Settings},{l:"Change Password",Ic:Lock}]
-                    .map(({l,Ic}) => (
-                    <div key={l} style={{ padding:"11px 16px", cursor:"pointer", fontSize:13,
-                      color:"#374151", display:"flex", alignItems:"center", gap:10, fontFamily:inter }}
-                      onMouseEnter={(e)=>e.currentTarget.style.background="#F9FAFB"}
-                      onMouseLeave={(e)=>e.currentTarget.style.background="transparent"}>
-                      <Ic size={15} color="#6B7280"/> {l}
-                    </div>
-                  ))}
-                  <div style={{ borderTop:"1px solid #E5E7EB" }}/>
-                  <div onClick={handleLogout} style={{ padding:"11px 16px", cursor:"pointer", fontSize:13,
-                    color:"#EF4444", display:"flex", alignItems:"center", gap:10, fontFamily:inter }}
-                    onMouseEnter={(e)=>e.currentTarget.style.background="#FEF2F2"}
-                    onMouseLeave={(e)=>e.currentTarget.style.background="transparent"}>
-                    <LogOut size={15} color="#EF4444"/> Logout
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+        <AdminHeader pageTitle="WELCOME BACK, ADMIN USER" pageSubtitle="Here's what's happening on your platform today." />
 
         {/* Content */}
         <main style={{ padding:28, display:"flex", flexDirection:"column", gap:24 }}>

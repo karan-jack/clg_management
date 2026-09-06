@@ -6,14 +6,14 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true
     },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
     employee_id: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false
     },
     department: {
       type: DataTypes.STRING

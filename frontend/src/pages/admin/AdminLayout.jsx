@@ -1,20 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
-  Users,
+  User,
   BookOpen,
   GraduationCap,
   BarChart2,
-  User,
   ChevronDown,
   ChevronRight,
   Search,
-  Bell,
-  Settings,
-  Lock,
-  LogOut,
 } from 'lucide-react';
+import AdminHeader from './AdminHeader';
 
 const NAV = [
   { label: 'Dashboard', icon: Home, path: '/admin' },
@@ -149,54 +145,7 @@ export default function AdminLayout({ title, subtitle, children, activePath, bre
       </aside>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <header style={{ background: '#fff', borderBottom: '1px solid #eaddd3', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 20 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#0b1a30' }}>{pageTitle}</h1>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>{pageSubtitle}</p>
-            {breadcrumbs.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
-                {breadcrumbs.map((crumb, index) => (
-                  <span key={crumb.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {index > 0 && <span>›</span>}
-                    <span style={index === breadcrumbs.length - 1 ? { color: '#64748b', fontWeight: 600 } : {}}>{crumb.label}</span>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <div style={{ position: 'relative', cursor: 'pointer' }}>
-              <Bell size={22} color="#374151" />
-              <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 17, height: 17, fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>3</span>
-            </div>
-
-            <div style={{ position: 'relative' }}>
-              <button type="button" onClick={() => setProfileOpen((value) => !value)} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '5px 8px', borderRadius: 8, background: profileOpen ? '#f3f4f6' : 'transparent', border: 'none' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0b1a30', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>AU</div>
-                <div style={{ lineHeight: 1.35, textAlign: 'left' }}>
-                  <div style={{ fontSize: 11, color: '#9ca3af' }}>Welcome,</div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#0b1a30' }}>Admin User</div>
-                </div>
-                <ChevronDown size={13} color="#9ca3af" />
-              </button>
-
-              {profileOpen && (
-                <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', background: '#fff', border: '1px solid #eaddd3', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 190, zIndex: 99, overflow: 'hidden' }}>
-                  {[{ label: 'My Profile', icon: User }, { label: 'Account Settings', icon: Settings }, { label: 'Change Password', icon: Lock }].map(({ label, icon: Icon }) => (
-                    <div key={label} style={{ padding: '11px 16px', cursor: 'pointer', fontSize: 13, color: '#0b1a30', display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Icon size={15} color="#6b7280" /> {label}
-                    </div>
-                  ))}
-                  <div style={{ borderTop: '1px solid #eaddd3' }} />
-                  <div onClick={handleLogout} style={{ padding: '11px 16px', cursor: 'pointer', fontSize: 13, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <LogOut size={15} color="#ef4444" /> Logout
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+        <AdminHeader pageTitle={pageTitle} pageSubtitle={pageSubtitle} breadcrumbs={breadcrumbs} />
 
         <main style={{ flex: 1, overflow: 'auto', padding: 24, background: '#fbf8f5' }}>{children}</main>
       </div>

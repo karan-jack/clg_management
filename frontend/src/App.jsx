@@ -15,6 +15,8 @@ const BatchesManagement = lazy(() => import('./pages/admin/academic management/B
 const SubjectsManagement = lazy(() => import('./pages/admin/academic management/SubjectsManagement'));
 const CoursesManagement = lazy(() => import('./pages/admin/academic management/CoursesManagement'));
 const LearningPathsManagement = lazy(() => import('./pages/admin/academic management/LearningPathsManagement'));
+const AdminProfilePage = lazy(() => import('./pages/admin/AdminProfilePage'));
+const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage'));
 
 // Student Pages (Lazy loaded)
 const StudentDashboard = lazy(() => import('./pages/student/Dashboard'));
@@ -143,8 +145,8 @@ export default function App() {
           <Route path="/admin/subjects" element={<ProtectedRoute allowedRole="admin"><SubjectsManagement /></ProtectedRoute>} />
           <Route path="/admin/courses" element={<ProtectedRoute allowedRole="admin"><CoursesManagement /></ProtectedRoute>} />
           <Route path="/admin/learning-paths" element={<ProtectedRoute allowedRole="admin"><LearningPathsManagement /></ProtectedRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Analytics" description="This section will show platform analytics reports." /></ProtectedRoute>} />
-          <Route path="/admin/profile" element={<ProtectedRoute allowedRole="admin"><AdminPlaceholderPage title="Profile" description="This section will show the admin profile and account settings." /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><AdminAnalyticsPage /></ProtectedRoute>} />
+          <Route path="/admin/profile" element={<ProtectedRoute allowedRole="admin"><AdminProfilePage /></ProtectedRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

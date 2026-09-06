@@ -50,35 +50,48 @@ const updatePathCourses = async (req, res) => {
 };
 
 const generateCrudControllers = (serviceGroup) => {
+    const getFn = (action, plural = false) => {
+        const fnName = `${action}${serviceGroup}${plural ? 's' : ''}`;
+        if (typeof adminService[fnName] !== 'function') {
+            throw new Error(`Service method ${fnName} is not implemented`);
+        }
+        return adminService[fnName];
+    };
+
     return {
         getAll: async (req, res) => {
             try {
-                const data = await adminService[`get${serviceGroup}s`](req.query);
+                const fn = getFn('get', true);
+                const data = await fn(req.query);
                 return res.status(200).json({ success: true, ...data });
             } catch (error) { return handleControllerError(res, error); }
         },
         getById: async (req, res) => {
             try {
-                const data = await adminService[`get${serviceGroup}ById`](req.params.id);
+                const fn = getFn('get', false);
+                const data = await fn(req.params.id);
                 if (!data) return res.status(404).json({ success: false, message: 'Not found' });
                 return res.status(200).json({ success: true, data });
             } catch (error) { return handleControllerError(res, error); }
         },
         create: async (req, res) => {
             try {
-                const data = await adminService[`create${serviceGroup}`](req.body);
+                const fn = getFn('create', false);
+                const data = await fn(req.body);
                 return res.status(201).json({ success: true, data });
             } catch (error) { return handleControllerError(res, error); }
         },
         update: async (req, res) => {
             try {
-                const data = await adminService[`update${serviceGroup}`](req.params.id, req.body);
+                const fn = getFn('update', false);
+                const data = await fn(req.params.id, req.body);
                 return res.status(200).json({ success: true, data });
             } catch (error) { return handleControllerError(res, error); }
         },
         delete: async (req, res) => {
             try {
-                await adminService[`delete${serviceGroup}`](req.params.id);
+                const fn = getFn('delete', false);
+                await fn(req.params.id);
                 return res.status(200).json({ success: true, message: 'Deleted successfully' });
             } catch (error) { return handleControllerError(res, error); }
         }

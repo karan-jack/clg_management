@@ -6,6 +6,14 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true
     },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    student_master_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
     total_xp: {
       type: DataTypes.INTEGER,
       allowNull: false,

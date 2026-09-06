@@ -14,7 +14,7 @@ module.exports = {
 
     await queryInterface.createTable('learning_path_courses', {
       learning_path_id: { type: Sequelize.INTEGER, primaryKey: true, references: { model: 'learning_paths', key: 'id' }, onDelete: 'CASCADE' },
-      course_id: { type: Sequelize.INTEGER, primaryKey: true, references: { model: 'courses', key: 'id' }, onDelete: 'CASCADE' }
+      course_id: { type: Sequelize.BIGINT, primaryKey: true, references: { model: 'courses', key: 'id' }, onDelete: 'CASCADE' }
     });
 
     await queryInterface.createTable('badges', {
@@ -27,15 +27,15 @@ module.exports = {
     });
 
     await queryInterface.createTable('student_badges', {
-      student_id: { type: Sequelize.INTEGER, primaryKey: true, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
+      student_id: { type: Sequelize.BIGINT, primaryKey: true, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
       badge_id: { type: Sequelize.INTEGER, primaryKey: true, references: { model: 'badges', key: 'id' }, onDelete: 'CASCADE' },
       earned_date: { type: Sequelize.DATE, defaultValue: Sequelize.fn('now') }
     });
 
     await queryInterface.createTable('certificates', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-      student_id: { type: Sequelize.INTEGER, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
-      course_id: { type: Sequelize.INTEGER, allowNull: false, references: { model: 'courses', key: 'id' }, onDelete: 'CASCADE' },
+      student_id: { type: Sequelize.BIGINT, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
+      course_id: { type: Sequelize.BIGINT, allowNull: false, references: { model: 'courses', key: 'id' }, onDelete: 'CASCADE' },
       title: { type: Sequelize.STRING, allowNull: false },
       issue_date: { type: Sequelize.DATE, defaultValue: Sequelize.fn('now') },
       status: { type: Sequelize.STRING, allowNull: true, defaultValue: 'Issued' },
@@ -44,7 +44,7 @@ module.exports = {
 
     await queryInterface.createTable('publications', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-      student_id: { type: Sequelize.INTEGER, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
+      student_id: { type: Sequelize.BIGINT, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
       title: { type: Sequelize.STRING, allowNull: false },
       authors: { type: Sequelize.STRING, allowNull: true },
       venue: { type: Sequelize.STRING, allowNull: true },
@@ -55,7 +55,7 @@ module.exports = {
 
     await queryInterface.createTable('activities', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-      user_id: { type: Sequelize.INTEGER, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
+      user_id: { type: Sequelize.BIGINT, allowNull: false, references: { model: 'users', key: 'id' }, onDelete: 'CASCADE' },
       type: { type: Sequelize.STRING, allowNull: false },
       title: { type: Sequelize.STRING, allowNull: false },
       subtitle: { type: Sequelize.STRING, allowNull: true },
